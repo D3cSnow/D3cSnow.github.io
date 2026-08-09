@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="Elixir — 115-1 daily study system: spaced repetition, drills, roadmap.">
+<meta name="theme-color" content="#17191e">
+<meta name="color-scheme" content="dark">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="./icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Elixir">
+<title>Elixir · 115-1</title>
+<style>
+:root{
+  --bg:#17191e; --panel:#1d2027; --panel2:#1a1d23; --line:#2a2e37;
+  --ink:#e8eaed; --dim:#9aa1ac; --faint:#6c727c;
+  --acc:#7fb3a4; --acc2:#8fa0c9; --hot:#c07f79; --gold:#c2a86a; --good:#82b493;
+  --med:#7fb3a4; --ai:#8fa0c9;
+  --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans TC",sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+body{min-height:100vh;background:var(--bg)}
+.wrap{max-width:900px;margin:0 auto;padding:28px 20px 80px}
+header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:18px}
+.brand h1{margin:0;font-size:22px;letter-spacing:.3px;font-weight:600}
+.brand .sub{color:var(--faint);font-size:12px;margin-top:5px;font-family:var(--mono);letter-spacing:.5px}
+.counters{display:flex;gap:10px;flex-wrap:wrap}
+.count{background:transparent;border:1px solid var(--line);border-radius:10px;padding:8px 12px;text-align:center;min-width:72px}
+.count .n{font-size:20px;font-weight:600;font-family:var(--mono);line-height:1;color:var(--ink)}
+.count .l{font-size:9px;color:var(--faint);text-transform:uppercase;letter-spacing:1px;margin-top:6px}
+.count.hot .n,.count.acc .n,.count.gold .n{color:var(--ink)}
+nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px}
+nav button{background:transparent;border:1px solid transparent;color:var(--dim);padding:8px 14px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;transition:.15s;font-family:var(--sans)}
+nav button:hover{color:var(--ink)}
+nav button.on{background:var(--panel);color:var(--ink);border-color:var(--line)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:22px;margin-bottom:14px}
+.panel h2{margin:0 0 4px;font-size:18px;display:flex;align-items:center;gap:9px}
+.panel h2 .tag{font-size:10px;font-family:var(--mono);padding:3px 8px;border-radius:6px;letter-spacing:.5px}
+.tag.med{background:rgba(127,179,164,.16);color:var(--med)} .tag.ai{background:rgba(143,160,201,.16);color:var(--ai)}
+.muted{color:var(--dim);font-size:13.5px;line-height:1.6}
+.phase-banner{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.phase-pill{font-family:var(--mono);font-size:12px;padding:6px 12px;border-radius:20px;border:1px solid var(--line);color:var(--acc);background:transparent}
+.phase-desc{color:var(--dim);font-size:13px}
+.block{display:grid;grid-template-columns:88px 1fr;gap:0;border-top:1px solid var(--line)}
+.block:last-child{border-bottom:1px solid var(--line)}
+.block .t{font-family:var(--mono);font-size:12px;color:var(--faint);padding:12px 12px 12px 0;border-right:1px solid var(--line)}
+.block .c{padding:11px 0 11px 14px}
+.block .c .k{font-weight:600;font-size:14px}
+.block .c .k .dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:8px;vertical-align:middle}
+.dot.med{background:var(--med)} .dot.ai{background:var(--ai)} .dot.both{background:var(--gold)}
+.block .c .d{color:var(--dim);font-size:12.5px;margin-top:3px;line-height:1.5}
+.btn{background:var(--acc);color:#10160f;border:1px solid var(--acc);padding:10px 18px;border-radius:8px;font-weight:600;font-size:13.5px;cursor:pointer;font-family:var(--sans);transition:.15s}
+.btn:hover{filter:brightness(1.06)}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--dim)}
+.btn.ghost:hover{border-color:var(--dim);color:var(--ink)}
+.btn.ai{background:transparent;border:1px solid var(--acc2);color:var(--acc2)}
+.btn.ai:hover{background:rgba(143,160,201,.08)}
+.btn.hot{background:transparent;border:1px solid var(--hot);color:var(--hot)}
+.btn.sm{padding:7px 12px;font-size:12.5px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.chip{background:transparent;border:1px solid var(--line);border-radius:20px;padding:6px 13px;font-size:12.5px;color:var(--dim);cursor:pointer;user-select:none;transition:.12s}
+.chip.on{border-color:var(--acc);color:var(--acc)}
+.chip.ai.on{border-color:var(--acc2);color:var(--acc2)}
+label.f{font-size:12px;color:var(--faint);text-transform:uppercase;letter-spacing:1px;display:block;margin:0 0 8px}
+select,input[type=number]{background:var(--panel2);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:8px 11px;font-family:var(--mono);font-size:13px}
+.q-card{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:20px;margin-top:14px}
+.q-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-family:var(--mono);font-size:11px;color:var(--faint)}
+.q-domain{padding:3px 9px;border-radius:6px;letter-spacing:.5px}
+.q-text{font-size:16px;line-height:1.55;font-weight:500;margin-bottom:16px}
+.opt{display:block;width:100%;text-align:left;background:var(--panel);border:1px solid var(--line);color:var(--ink);padding:13px 15px;border-radius:9px;margin-bottom:9px;cursor:pointer;font-size:14px;transition:.12s;font-family:var(--sans)}
+.opt:hover{border-color:var(--acc)}
+.opt.correct{border-color:var(--good);background:rgba(130,180,147,.12);color:#bfe6cd}
+.opt.wrong{border-color:var(--hot);background:rgba(192,127,121,.12);color:#e6bdba}
+.opt.dim{opacity:.5}
+.opt .ltr{font-family:var(--mono);color:var(--faint);margin-right:10px}
+.exp{background:rgba(143,160,201,.06);border-left:2px solid var(--acc2);border-radius:0 8px 8px 0;padding:13px 15px;margin-top:14px;font-size:13.5px;line-height:1.6;color:#cdd6e0}
+.exp b{color:var(--gold)}
+.reveal{border:1px dashed var(--line);border-radius:10px;padding:22px;text-align:center;color:var(--dim);cursor:pointer;margin-top:14px;font-size:14px}
+.reveal:hover{border-color:var(--acc);color:var(--acc)}
+.grade-row{display:flex;gap:9px;margin-top:16px}
+.grade-row button{flex:1;padding:12px;border-radius:9px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer;font-weight:600;font-size:13px}
+.g-again{border-color:var(--hot)!important;color:#e6bdba}
+.g-good{border-color:var(--good)!important;color:#bfe6cd}
+.g-easy{border-color:var(--acc)!important;color:var(--acc)}
+.grade-row button:hover{filter:brightness(1.15)}
+.progress-bar{height:7px;background:var(--panel2);border-radius:20px;overflow:hidden;border:1px solid var(--line)}
+.progress-bar > i{display:block;height:100%;background:var(--acc);border-radius:20px;transition:width .4s}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
+.stat{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:15px}
+.stat .v{font-size:24px;font-weight:600;font-family:var(--mono)}
+.stat .k{font-size:11px;color:var(--faint);text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+.dombar{margin-top:10px}
+.dombar .lab{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px}
+.dombar .lab .pct{font-family:var(--mono);color:var(--dim)}
+.rm-phase{border-left:2px solid var(--line);padding:2px 0 2px 16px;margin-bottom:20px;position:relative}
+.rm-phase::before{content:"";position:absolute;left:-6px;top:5px;width:9px;height:9px;border-radius:50%;background:var(--acc)}
+.rm-phase h3{margin:0 0 3px;font-size:15px}
+.rm-phase .when{font-family:var(--mono);font-size:11.5px;color:var(--gold);margin-bottom:7px}
+.rm-phase ul{margin:6px 0 0;padding-left:18px;color:var(--dim);font-size:13px;line-height:1.7}
+.hide{display:none}
+.foot{text-align:center;color:var(--faint);font-size:11.5px;margin-top:30px;font-family:var(--mono)}
+.kbd{font-family:var(--mono);font-size:11px;background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:2px 6px;color:var(--dim)}
+.empty{text-align:center;padding:36px 20px;color:var(--faint)}
+
+/* ============ mobile / touch ============ */
+html{-webkit-text-size-adjust:100%}
+*{-webkit-tap-highlight-color:rgba(127,179,164,.18)}
+@supports(padding:max(0px)){
+  body{padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}
+}
+@media (max-width:720px){
+  .wrap{padding:16px 14px calc(60px + env(safe-area-inset-bottom))}
+  header{flex-direction:column;align-items:stretch;gap:13px;padding-bottom:13px;margin-bottom:14px}
+  .brand h1{font-size:20px}
+  .counters{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+  .count{min-width:0;padding:8px 3px;border-radius:9px}
+  .count .n{font-size:17px}
+  .count .l{font-size:7.5px;letter-spacing:.4px;margin-top:5px}
+  /* nav becomes a horizontally scrollable strip, bleeding to the screen edge */
+  nav{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+      margin:0 -14px 16px;padding:0 14px 4px;gap:4px}
+  nav::-webkit-scrollbar{display:none}
+  nav button{flex:0 0 auto;padding:10px 15px;font-size:13.5px;min-height:42px}
+  .panel{padding:16px 14px;border-radius:11px;margin-bottom:12px}
+  .panel h2{font-size:16px;flex-wrap:wrap}
+  .muted{font-size:13px}
+  .block{grid-template-columns:66px 1fr}
+  .block .t{font-size:11px;padding:11px 8px}
+  .q-card{padding:16px 14px}
+  .q-text{font-size:15.5px}
+  .opt{padding:14px 14px;font-size:14.5px;margin-bottom:8px}
+  .exp{padding:12px 13px;font-size:13px}
+  .reveal{padding:26px 16px}
+  .grade-row{gap:7px}
+  .grade-row button{padding:15px 6px;font-size:13px}
+  .stat-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+  .stat{padding:13px}
+  .stat .v{font-size:21px}
+  .chip{padding:9px 14px;font-size:13px}
+  .btn{min-height:44px;display:inline-flex;align-items:center;justify-content:center}
+  .btn.sm{min-height:38px}
+  /* 16px prevents iOS Safari from zooming in when a field gets focus */
+  select,input[type=number]{min-height:44px;font-size:16px}
+  .rm-phase{padding-left:14px}
+  .foot{font-size:11px;margin-top:24px}
+}
+@media (max-width:380px){
+  .counters{grid-template-columns:repeat(2,1fr)}
+  .stat-grid{grid-template-columns:1fr}
+  .block{grid-template-columns:58px 1fr}
+}
+/* standalone (added to home screen): pad for the status bar */
+@media (display-mode:standalone){
+  .wrap{padding-top:calc(18px + env(safe-area-inset-top))}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <h1>Elixir</h1>
+      <div class="sub">115-1 · daily study system</div>
+    </div>
+    <div class="counters">
+      <div class="count acc"><div class="n" id="cd-term">—</div><div class="l">days to term</div></div>
+      <div class="count gold"><div class="n" id="cd-mid">—</div><div class="l">to midterms</div></div>
+      <div class="count hot"><div class="n" id="cd-fin">—</div><div class="l">to finals</div></div>
+      <div class="count"><div class="n" id="st-streak">0</div><div class="l">day streak</div></div>
+    </div>
+  </header>
+
+  <nav id="nav">
+    <button data-t="today" class="on">Today</button>
+    <button data-t="drill">Drill</button>
+    <button data-t="cards">Flashcards</button>
+    <button data-t="roadmap">Roadmap</button>
+    <button data-t="progress">Progress</button>
+  </nav>
+
+  <section id="today">
+    <div class="panel">
+      <div class="phase-banner">
+        <span class="phase-pill" id="phase-pill">—</span>
+        <span class="phase-desc" id="phase-desc"></span>
+      </div>
+      <h2>Today <span class="muted" id="today-date" style="font-weight:400;font-size:13px"></span></h2>
+      <p class="muted" id="today-focus" style="margin:8px 0 2px"></p>
+    </div>
+    <div class="panel" style="padding-top:8px">
+      <div id="schedule"></div>
+      <div class="row" style="margin-top:18px">
+        <button class="btn" onclick="go('drill');buildDrillFromToday()">Start drill</button>
+        <button class="btn ai" onclick="go('cards')">Due cards (<span id="due-inline">0</span>)</button>
+        <button class="btn ghost sm" onclick="logStudy()">Mark studied</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="drill" class="hide">
+    <div class="panel" id="drill-setup">
+      <h2>Drill</h2>
+      <p class="muted">Pick domains, then answer. No peeking.</p>
+      <div style="margin-top:16px">
+        <label class="f">Domains</label>
+        <div class="row" id="dom-chips"></div>
+      </div>
+      <div class="row" style="margin-top:16px;gap:22px">
+        <div><label class="f">Difficulty</label>
+          <select id="d-diff"><option value="0">All</option><option value="1">1 · core</option><option value="2">2 · applied</option><option value="3" selected>3 · hard</option></select></div>
+        <div><label class="f">Questions</label>
+          <input type="number" id="d-count" value="20" min="3" max="60" style="width:80px"></div>
+        <div style="align-self:flex-end"><button class="btn" onclick="startDrill()">Start →</button></div>
+      </div>
+    </div>
+    <div id="drill-run" class="hide">
+      <div class="panel">
+        <div class="row" style="justify-content:space-between">
+          <div class="muted" id="drill-prog" style="font-family:var(--mono)"></div>
+          <div class="muted" id="drill-score" style="font-family:var(--mono)"></div>
+        </div>
+        <div class="progress-bar" style="margin-top:10px"><i id="drill-bar" style="width:0%"></i></div>
+        <div id="drill-q"></div>
+        <div class="row" style="margin-top:16px">
+          <button class="btn ghost sm" id="drill-next" onclick="nextDrill()" disabled>Next →</button>
+          <button class="btn ghost sm" onclick="quitDrill()">Quit</button>
+        </div>
+      </div>
+    </div>
+    <div id="drill-done" class="hide"></div>
+  </section>
+
+  <section id="cards" class="hide">
+    <div class="panel">
+      <h2>Spaced Repetition <span class="tag med" id="due-count">0 due</span></h2>
+      <p class="muted">Leitner spaced repetition. Grade honestly — hard cards return sooner.</p>
+      <div class="row" style="margin-top:14px">
+        <button class="btn" onclick="startCards('due')">Study due cards</button>
+        <button class="btn ai" onclick="startCards('new')">Learn new cards</button>
+        <button class="btn ghost sm" onclick="startCards('all')">Cram all</button>
+      </div>
+    </div>
+    <div id="card-run" class="hide"></div>
+  </section>
+
+  <section id="roadmap" class="hide">
+    <div class="panel">
+      <h2>Master Roadmap — Summer Runway → 115-1</h2>
+      <p class="muted">Today is <b id="rm-today"></b>. Eight-week runway to pre-teach the core, then keep-up + spaced review through the term. Full detail in <span class="kbd">Roadmap.md</span>.</p>
+      <div id="rm-body" style="margin-top:18px"></div>
+    </div>
+  </section>
+
+  <section id="progress" class="hide">
+    <div class="panel">
+      <h2>Progress</h2>
+      <div class="stat-grid" id="stat-grid" style="margin-top:8px"></div>
+    </div>
+    <div class="panel">
+      <h2>Accuracy by domain</h2>
+      <div id="dom-stats" style="margin-top:10px"></div>
+    </div>
+    <div class="panel">
+      <h2>Card maturity (Leitner boxes)</h2>
+      <div id="box-stats" style="margin-top:10px"></div>
+      <div class="row" style="margin-top:18px">
+        <button class="btn ghost sm" onclick="exportState()">Export progress (JSON)</button>
+        <button class="btn ghost sm" onclick="importState()">Import progress (JSON)</button>
+        <button class="btn ghost sm" onclick="resetState()">Reset all data</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="foot">Elixir · offline · data stays on <b>this device</b> · <span id="bank-n"></span> items<br>
+    <span style="opacity:.7">phone and laptop do not sync — use Export / Import on the Progress tab</span></div>
+</div>
+
+<script>
+/* domains: AN=Anatomy PH=Physiology HI=Histology EM=Embryology CV=Computer Vision MI=Medical Imaging AI LLM=LLM basics */
+const DOMAINS={AN:{n:"Anatomy",side:"med"},PH:{n:"Physiology",side:"med"},HI:{n:"Histology",side:"med"},EM:{n:"Embryology",side:"med"},CV:{n:"Computer Vision",side:"ai"},MI:{n:"Medical Imaging AI",side:"ai"},LLM:{n:"LLM Basics",side:"ai"}};
+function m(dm,df,q,opts,ans,exp){return{dm,df,ty:"mcq",q,opts,ans,exp}}
+function f(dm,df,q,ans,exp){return{dm,df,ty:"flash",q,ans,exp:exp||""}}
+const BANK=[
+m("AN",1,"A fracture at the surgical neck of the humerus most endangers which nerve?",["Radial nerve","Axillary nerve","Musculocutaneous nerve","Ulnar nerve"],1,"The <b>axillary nerve</b> (C5–C6) wraps the surgical neck with the posterior circumflex humeral artery. Injury → deltoid + teres minor weakness (impaired abduction) and 'regimental badge' sensory loss."),
+m("AN",2,"An 'upper trunk' (C5–C6) brachial plexus injury classically produces which posture?",["Claw hand from a C8-T1 Klumpke injury","Waiter's tip, arm internally rotated","Wrist drop from a radial nerve lesion","Ape hand from a median nerve lesion"],1,"<b>Erb's palsy</b> (C5–C6) = 'waiter's tip'. Klumpke's (C8–T1) gives the claw hand."),
+m("AN",1,"Which nerve is compressed in carpal tunnel syndrome?",["Ulnar nerve","Median nerve","Radial nerve","Anterior interosseous nerve"],1,"The <b>median nerve</b> travels with 9 flexor tendons under the flexor retinaculum. The ulnar nerve passes separately through Guyon's canal, so it is spared."),
+m("AN",2,"The right recurrent laryngeal nerve hooks under which structure?",["Aortic arch","Right subclavian artery","Ligamentum arteriosum","Brachiocephalic vein"],1,"Right RLN loops under the <b>right subclavian artery</b>; the left loops under the aortic arch, so the left is more vulnerable to thoracic pathology."),
+m("AN",2,"At which vertebral level does the IVC pass through the diaphragm?",["T8 (caval hiatus)","T10 (esophageal)","T12 (aortic)","L1"],0,"'T8 – ate (IVC); T10 – esophagus + vagus; T12 – aorta + thoracic duct + azygos.'"),
+m("AN",3,"The floor of the anatomical snuffbox is formed mainly by which bone, whose fracture risks avascular necrosis?",["Lunate","Scaphoid","Trapezium","Hamate"],1,"The <b>scaphoid</b>'s retrograde blood supply means a waist fracture can cause AVN of the proximal pole. The radial artery crosses here."),
+m("AN",1,"Which cranial nerves exit the jugular foramen?",["III, IV, VI","IX, X, XI","V1, V2, V3","VII, VIII"],1,"Jugular foramen: CN <b>IX, X, XI</b> plus the internal jugular vein and sigmoid sinus."),
+f("AN",1,"Name the rotator cuff muscles (mnemonic).","SITS: Supraspinatus, Infraspinatus, Teres minor, Subscapularis.","Supraspinatus initiates abduction and is the most commonly torn; subscapularis internally rotates."),
+f("AN",2,"Borders and contents of the femoral triangle.","Borders: inguinal ligament (sup), sartorius (lat), adductor longus (med). Floor: iliopsoas + pectineus. Contents lateral→medial = NAVEL: femoral Nerve, Artery, Vein, Empty space, Lymphatics.","The femoral nerve lies OUTSIDE the femoral sheath; artery, vein and canal are inside it."),
+f("AN",2,"Unpaired anterior branches of the abdominal aorta and their levels.","Celiac trunk (T12), SMA (L1), IMA (L3).","These supply foregut, midgut and hindgut respectively — the same order as gut embryology."),
+m("AN",2,"During a posterior triangle node biopsy, weakness of trapezius indicates injury to:",["Ansa cervicalis","Accessory nerve (CN XI)","Phrenic nerve","Long thoracic nerve"],1,"CN <b>XI</b> crosses the posterior triangle superficially → trapezius weakness (shoulder droop, weak shrug)."),
+m("AN",3,"'Winging' of the scapula results from injury to which nerve/muscle?",["Long thoracic → serratus anterior","Thoracodorsal → latissimus dorsi","Dorsal scapular → rhomboids","Suprascapular → supraspinatus"],0,"The <b>long thoracic nerve (C5–C7)</b> supplies serratus anterior; injury → medial winging, worse on wall-push."),
+f("AN",1,"Branches of the external carotid artery (mnemonic).","'Some Anatomists Like Freaking Out Poor Medical Students': Superior thyroid, Ascending pharyngeal, Lingual, Facial, Occipital, Posterior auricular, Maxillary, Superficial temporal.","Maxillary and superficial temporal are the terminal branches, within the parotid."),
+m("AN",2,"Which structure passes through the foramen ovale of the sphenoid?",["Maxillary nerve (V2)","Mandibular nerve (V3)","Middle meningeal artery","Internal carotid artery"],1,"Foramen ovale → V3. V2 goes through foramen rotundum; the middle meningeal artery through foramen spinosum."),
+m("PH",1,"The resting membrane potential of a neuron is closest to the equilibrium potential of which ion?",["Na+","K+","Ca2+","Cl-"],1,"At rest the membrane is most permeable to <b>K+</b>, so Vm sits near E_K (~ -90 mV). Opening Na+ channels drives depolarization toward E_Na."),
+m("PH",2,"The plateau (phase 2) of a ventricular action potential is caused by:",["Fast Na+ influx through voltage-gated channels","Ca2+ influx balancing K+ efflux","K+ efflux with all Ca2+ channels shut","Cl- influx repolarizing the membrane"],1,"Phase 2 = inward <b>Ca2+ (L-type)</b> balancing outward K+, prolonging the AP and refractory period."),
+m("PH",1,"By the Frank–Starling relationship, increasing preload (EDV) will:",["Decrease stroke volume","Increase stroke volume","Not change stroke volume","Decrease heart rate"],1,"Greater end-diastolic stretch → stronger contraction → <b>increased stroke volume</b>, matching output to venous return."),
+m("PH",2,"Which change shifts the O2–hemoglobin curve to the RIGHT (offloading O2)?",["Decreased 2,3-BPG","Increased pH (alkalosis)","Increased CO2 and H+","Decreased temperature"],2,"Right shift = easier unloading: ↑CO2, ↑H+, ↑2,3-BPG, ↑temperature (<b>Bohr effect</b>). Fetal Hb and CO shift it left."),
+m("PH",2,"Constriction of the EFFERENT arteriole (low-dose angiotensin II) has what effect on GFR?",["Decreases GFR","Increases GFR","No change","Abolishes filtration"],1,"Efferent constriction raises glomerular capillary pressure → <b>GFR rises</b> (filtration fraction increases). Afferent constriction lowers GFR."),
+m("PH",2,"Which hormone increases collecting-duct water permeability via aquaporin-2?",["Aldosterone","ADH (vasopressin)","ANP","Renin"],1,"<b>ADH</b> binds V2 receptors → cAMP → inserts aquaporin-2 → water reabsorption. Aldosterone acts on Na+/K+ handling."),
+m("PH",1,"The most important buffer system in blood plasma is:",["The phosphate buffer system","Bicarbonate / CO2","Hemoglobin in the blood","Ammonia in the renal tubule"],1,"The <b>bicarbonate–CO2</b> system dominates: CO2 tuned by lungs, HCO3- by kidney. pH = 6.1 + log([HCO3-]/(0.03·PCO2))."),
+m("PH",3,"Renal clearance of which substance best estimates GFR?",["PAH","Glucose","Inulin","Creatinine (overestimates)"],2,"<b>Inulin</b> is freely filtered, not reabsorbed/secreted → clearance = GFR. PAH clearance ≈ renal plasma flow."),
+f("PH",2,"State the Starling equation concept for capillary fluid movement.","Net filtration ∝ (Pc − Pi) − σ(πc − πi). Capillary hydrostatic pressure pushes fluid out; plasma oncotic pressure pulls it in.","Edema: ↑Pc (heart failure), ↓πc (hypoalbuminemia), ↑permeability, or lymphatic blockage."),
+m("PH",1,"Insulin lowers glucose largely by translocating which transporter in muscle and fat?",["GLUT1","GLUT2","GLUT4","SGLT1"],2,"Insulin recruits <b>GLUT4</b> to the membrane. Brain (GLUT1/3) and liver/β-cells (GLUT2) are insulin-independent for uptake."),
+m("PH",2,"The intrinsic rhythm of breathing is generated primarily by:",["Pontine pneumotaxic center","Pre-Bötzinger complex (medulla)","Carotid body","Hypothalamus"],1,"The <b>pre-Bötzinger complex</b> generates inspiratory rhythm; central chemoreceptors sense CSF pH (a proxy for CO2)."),
+f("PH",2,"Distinguish obstructive vs restrictive lung disease by spirometry.","Obstructive (asthma, COPD): FEV1/FVC < 0.7. Restrictive (fibrosis): FEV1/FVC normal or high, but FVC and TLC reduced.","Obstruction: FEV1 falls more than FVC. Restriction: volumes shrink proportionally."),
+m("PH",1,"At the neuromuscular junction, the transmitter and receptor are:",["Norepinephrine acting on α1 adrenoceptors","Acetylcholine on nicotinic receptors","Glutamate acting on NMDA receptors","Dopamine acting on D2 receptors"],1,"Motor neurons release <b>acetylcholine</b> onto <b>nicotinic</b> receptors; acetylcholinesterase terminates the signal."),
+m("PH",2,"A rise in arterial pressure triggers the baroreceptor reflex, which:",["Increases sympathetic outflow to the heart","Decreases heart rate via increased vagal tone","Constricts arterioles to raise resistance","Raises arterial pressure still further"],1,"↑BP stretches carotid sinus (IX) and aortic arch (X) → medulla ↓sympathetic, ↑parasympathetic → <b>↓HR</b> and vasodilation."),
+f("PH",3,"What generates the SA node pacemaker potential (phase 4)?","The 'funny' current I_f: Na+ influx through HCN channels, aided by T- then L-type Ca2+ channels, drifting to threshold.","Sympathetic (β1, cAMP) steepens phase 4 → faster; vagal ACh (M2) flattens it → slower."),
+m("HI",1,"The epithelium lining the trachea is:",["Simple squamous, as in the alveoli","Pseudostratified ciliated columnar","Stratified squamous keratinized, as in skin","Transitional urothelium, as in the bladder"],1,"<b>Pseudostratified ciliated columnar</b> epithelium with goblet cells forms the mucociliary escalator."),
+f("HI",1,"Three types of cartilage and a signature location for each.","Hyaline (articular/respiratory — most common), Elastic (ear, epiglottis), Fibrocartilage (IV discs, menisci, pubic symphysis).","Fibrocartilage has type I collagen and no perichondrium; it resists tension and compression."),
+m("HI",1,"Multinucleated bone cells that resorb matrix, from the monocyte lineage, are:",["Osteoblasts","Osteocytes","Osteoclasts","Chondrocytes"],2,"<b>Osteoclasts</b> resorb bone in Howship's lacunae via H+ and cathepsin K. Osteoblasts build osteoid; trapped ones become osteocytes."),
+m("HI",2,"Which junction forms the paracellular seal of the blood–brain barrier and apical epithelial seal?",["Desmosome (macula adherens)","Tight junction (zonula occludens)","Gap junction (connexon channels)","Hemidesmosome to the basement membrane"],1,"<b>Tight junctions</b> block paracellular flow and set apical–basal polarity. Desmosomes give strength; gap junctions couple cells."),
+m("HI",2,"Kupffer cells are the resident macrophages of the:",["Renal glomerulus","Liver sinusoids","Splenic red pulp","Alveoli"],1,"<b>Kupffer cells</b> line hepatic sinusoids and clear gut-derived bacteria and aged RBCs."),
+m("HI",2,"The epithelium of the urinary bladder is:",["Simple columnar","Transitional (urothelium)","Stratified squamous","Pseudostratified"],1,"<b>Transitional epithelium</b> has 'umbrella' cells that flatten as the bladder fills, remaining impermeable to urine."),
+f("HI",1,"H&E staining: what do hematoxylin and eosin bind?","Hematoxylin (basic) stains acidic/basophilic structures blue-purple (nuclei, rough ER). Eosin (acidic) stains basic/eosinophilic structures pink (cytoplasm, collagen).","A plasma cell (rich rough ER) looks basophilic; collagen looks eosinophilic."),
+f("HI",2,"Histological features of the three muscle types.","Skeletal: striated, multinucleated, peripheral nuclei. Cardiac: striated, central nucleus, intercalated discs. Smooth: non-striated, spindle cells, central single nucleus.","Intercalated discs (desmosomes + gap junctions) are the cardiac hallmark."),
+m("HI",2,"In the renal corpuscle, the cells with foot processes (pedicels) forming filtration slits are:",["Mesangial cells","Podocytes","Endothelial cells","Juxtaglomerular cells"],1,"<b>Podocytes</b> (visceral Bowman's capsule) form slit diaphragms — the final size/charge barrier of the glomerular filter."),
+m("HI",2,"Type II pneumocytes are characterized by:",["Thin cytoplasm specialized for gas exchange","Surfactant secretion and lamellar bodies","Forming the supporting bronchial cartilage","A ciliated apical surface clearing mucus"],1,"<b>Type II pneumocytes</b> are cuboidal, contain lamellar bodies, secrete surfactant, and act as alveolar stem cells. Type I do the gas exchange."),
+f("HI",1,"Layers of the GI tract wall from lumen outward.","Mucosa (epithelium + lamina propria + muscularis mucosae), Submucosa (Meissner's plexus), Muscularis externa (Auerbach's plexus), Serosa/adventitia.","Submucosal (Meissner) plexus controls secretion; myenteric (Auerbach) plexus controls motility."),
+m("HI",3,"The exocrine pancreas secretes enzymes from which structures; endocrine hormones from which?",["Islets / acini","Acini / islets of Langerhans","Ducts / acini","Centroacinar cells / ducts"],1,"Exocrine <b>acini</b> secrete zymogens; endocrine <b>islets of Langerhans</b> release insulin (β), glucagon (α), somatostatin (δ)."),
+m("EM",1,"The three germ layers are established during which process, in which week?",["Fertilization, week 1","Gastrulation, week 3","Neurulation, week 4","Implantation, week 2"],1,"<b>Gastrulation</b> (week 3) converts the bilaminar disc into ectoderm, mesoderm and endoderm via the primitive streak."),
+f("EM",1,"Major derivatives of ectoderm (including neural crest).","Surface ectoderm → epidermis, lens, inner ear. Neuroectoderm → CNS, retina. Neural crest → PNS ganglia, Schwann cells, melanocytes, adrenal medulla, aorticopulmonary septum, most facial bones.","Neural crest is the 'fourth germ layer'; its wide migration links skin, nerve and heart defects."),
+m("EM",2,"Failure of the anterior (cranial) neuropore to close produces:",["Spina bifida","Anencephaly","Meningocele","Holoprosencephaly"],1,"Cranial neuropore failure → <b>anencephaly</b>. Caudal failure → spina bifida. Both are reduced by folate and raise maternal AFP."),
+m("EM",2,"Pharyngeal arch 1 gives the muscles of mastication and which cranial nerve?",["CN VII (facial)","CN V (trigeminal)","CN IX (glossopharyngeal)","CN X (vagus)"],1,"Arch 1 → muscles of mastication, malleus/incus, maxilla & mandible, innervated by <b>CN V</b>. Arch 2 → VII, arch 3 → IX, arches 4/6 → X."),
+f("EM",2,"Fates of the pharyngeal arch arteries (3rd, 4th, 6th).","3rd → common carotid + proximal internal carotid. 4th → arch of aorta (left) / proximal right subclavian (right). 6th → pulmonary arteries and (left) ductus arteriosus.","This asymmetry explains the recurrent laryngeal nerve courses."),
+m("EM",2,"In the fetal heart, the foramen ovale shunts blood:",["Left atrium to right atrium","Right atrium to left atrium","Aorta to pulmonary artery","Ventricle to atrium"],1,"The <b>foramen ovale</b> shunts oxygenated blood right→left atrium, bypassing the lungs; it closes to the fossa ovalis."),
+m("EM",3,"The adult ligamentum teres of the liver is the remnant of the:",["Ductus venosus","Umbilical vein","Umbilical arteries","Vitelline duct"],1,"The obliterated <b>umbilical vein</b> becomes the ligamentum teres. Ductus venosus → ligamentum venosum; umbilical arteries → medial umbilical ligaments."),
+f("EM",2,"Subdivisions of mesoderm and their key derivatives.","Paraxial → somites → sclerotome (vertebrae), myotome (muscle), dermatome (dermis). Intermediate → urogenital. Lateral plate → somatic (body wall) + splanchnic (visceral muscle, heart).","Somites appear craniocaudally (~day 20) and are used to age embryos."),
+m("EM",3,"Esophageal atresia with tracheoesophageal fistula arises from abnormal development of the:",["Urorectal septum","Tracheoesophageal septum","Pleuroperitoneal membrane","Bucconasal membrane"],1,"Faulty <b>tracheoesophageal septum</b> partitioning of the foregut. Clue: polyhydramnios, then choking and failure to pass an NG tube."),
+m("EM",2,"The definitive adult kidney develops from:",["Pronephros","Mesonephros","Metanephros","Allantois"],2,"The <b>metanephros</b> (ureteric bud + metanephric mesenchyme) forms the adult kidney and ascends from pelvis to abdomen."),
+f("EM",1,"Major derivatives of endoderm.","Epithelial lining of GI and respiratory tracts; parenchyma of liver, pancreas, thyroid, parathyroid, thymus; lining of bladder and urethra.","Endoderm makes linings and glands; the surrounding wall is splanchnic mesoderm."),
+m("EM",3,"Monochorionic–monoamniotic twins result from splitting of the inner cell mass at approximately:",["Day 1–3","Day 4–7","Day 8–13","After day 13"],2,"Splitting at <b>day 8–13</b> → mono/mono (shared chorion + amnion). After day 13 → conjoined; before day 8 → di/di."),
+m("CV",1,"The primary purpose of a convolutional layer is to:",["Fully connect every pixel to every output unit","Extract local features with shared filters","Normalize raw pixel intensities across the image","Reduce the whole image to a single scalar"],1,"Convolution slides learnable <b>filters</b> across the image, using locality and <b>weight sharing</b> → translation equivariance and few parameters."),
+m("CV",1,"Max-pooling mainly provides:",["Adding many more learnable parameters","Downsampling and local translation invariance","Increasing the spatial resolution of maps","Providing nonlinearity, the way ReLU does"],1,"<b>Pooling</b> shrinks spatial dimensions, enlarges the receptive field, and gives small-shift invariance, with no learnable weights."),
+m("CV",2,"For input W, filter F, padding P, stride S, the output width is:",["W·F/S, rounded down to floor","(W − F + 2P)/S + 1","W − F − 2P","(W + F)/S, rounded up"],1,"Output = <b>(W − F + 2P)/S + 1</b>. 'Same' padding with stride 1 keeps size; stride > 1 downsamples."),
+m("CV",2,"A 1×1 convolution is most useful for:",["Detecting oriented edges in the image","Channel-wise dimensionality reduction and mixing","Increasing the spatial resolution of features","Removing nonlinearity from the network"],1,"A <b>1×1 conv</b> mixes channels at each pixel — a cheap bottleneck to cut/expand depth (Inception, ResNet)."),
+m("CV",2,"The vanishing-gradient problem in deep nets is best mitigated by:",["Using sigmoid activations throughout","Residual (skip) connections and ReLU","Simply using a much larger learning rate","Removing all normalization layers"],1,"<b>Residual connections</b> pass gradients through identity shortcuts; <b>ReLU</b> avoids saturation; BN and good init help. This makes 50–100+ layer nets trainable."),
+f("CV",1,"Define the receptive field of a neuron in a CNN.","The region of the input image that can influence that neuron's activation. It grows with depth, larger kernels, stride, and dilation.","For segmentation you need a receptive field large enough to cover the object — hence downsampling or dilated convolutions."),
+f("CV",1,"What is IoU (Intersection over Union) and where is it used?","IoU = area(overlap) / area(union) of prediction vs ground truth. Used for detection (boxes) and segmentation.","Detections often count as correct at IoU ≥ 0.5; segmentation reports mean IoU."),
+m("CV",2,"Batch normalization improves training mainly by:",["Adding extra parameters to the loss term","Normalizing activations per mini-batch","Replacing the optimizer with a better one","Removing the need for training data"],1,"<b>BatchNorm</b> standardizes activations then applies learnable γ, β. It stabilizes and speeds training and adds mild regularization."),
+m("CV",1,"Why is cross-entropy preferred over MSE for classification?",["It is simply faster to compute each step","It matches softmax probability outputs","It ignores the ground-truth class labels","It single-handedly prevents overfitting"],1,"<b>Cross-entropy</b> pairs with softmax and penalizes confident wrong predictions strongly, avoiding the stalls MSE can cause on saturated outputs."),
+f("CV",1,"What is transfer learning and why is it vital for medical imaging?","Pretrain on a large dataset (ImageNet), then fine-tune on the smaller target task. Medical datasets are small and costly to label, so reusing learned low-level features improves data efficiency.","Options: freeze early layers + train the head, or fine-tune all at a low learning rate."),
+m("CV",2,"Dropout reduces overfitting by:",["Permanently deleting part of the training data","Randomly zeroing activations during training","Increasing the optimizer's learning rate","Adding many more layers to the network"],1,"<b>Dropout</b> drops units each step, preventing co-adaptation (like an ensemble). It is disabled at inference."),
+m("CV",1,"The softmax function converts a vector of logits into:",["A single integer class label","A probability distribution that sums to 1","A binary foreground/background mask","Per-channel normalized pixel values"],1,"<b>Softmax</b> exponentiates and normalizes logits into class probabilities summing to 1."),
+f("CV",2,"Contrast a convolutional layer with a fully-connected layer.","Conv: local receptive field + weight sharing → few parameters, preserves spatial structure, translation-equivariant. FC: every input connects to every output → many parameters, no spatial prior.","CNNs use conv layers for feature extraction and a small FC head for the decision."),
+m("CV",2,"Common data augmentations for natural images include all EXCEPT:",["Random flips and crops","Color jitter and rotation","Relabeling classes at random","Random erasing / scaling"],2,"Augmentation must <b>preserve the label</b>. Randomly changing labels just injects noise. (Flips can be unsafe for laterality-sensitive medical images.)"),
+m("MI",1,"The defining feature of U-Net is:",["A single fully-connected classifier","An encoder–decoder with skip connections","Recurrent layers","No downsampling"],1,"<b>U-Net</b> pairs a contracting encoder with an expanding decoder plus <b>skip connections</b> that recover fine boundaries — ideal for biomedical segmentation with little data."),
+f("MI",1,"Define the Dice coefficient and why it suits medical segmentation.","Dice = 2|A∩B| / (|A|+|B|). It emphasizes the small foreground and is robust to a huge background, unlike pixel accuracy.","Dice loss = 1 − Dice, often combined with cross-entropy or focal loss for class imbalance."),
+m("MI",2,"Why are Dice/focal losses preferred over plain pixel cross-entropy in tumor MRI?",["Tumors always occupy most of the image","Severe foreground/background class imbalance","MRI scans contain essentially no noise","These losses need no ground-truth labels"],1,"The tumor is a tiny fraction of voxels, so pixel cross-entropy is dominated by background. <b>Dice/focal</b> up-weight the rare foreground."),
+m("MI",2,"On which MRI sequence do edema and CSF appear bright?",["T1-weighted","T2-weighted / FLAIR","Diffusion b0 only","T1 post-contrast"],1,"On <b>T2/FLAIR</b>, fluid/edema is bright (FLAIR nulls pure CSF). T1 shows anatomy; T1+gadolinium highlights enhancing tumor."),
+f("MI",1,"What is the BraTS dataset and its label structure?","BraTS = Brain Tumor Segmentation benchmark: multi-parametric MRI (T1, T1-contrast, T2, FLAIR) with labels for enhancing tumor, peritumoral edema, and necrotic/non-enhancing core.","Eval regions: Whole Tumor, Tumor Core, Enhancing Tumor, scored by Dice and Hausdorff."),
+m("MI",2,"The key idea of the Swin Transformer for dense prediction is:",["Full global attention over every pixel pair","Hierarchical shifted-window self-attention","Using no attention mechanism at all","Relying only on 1×1 convolutions"],1,"<b>Swin</b> computes attention within local windows (linear cost) and 'shifts' them between layers, with a hierarchical design for multi-scale features."),
+m("MI",3,"Compared with a plain ViT, windowed self-attention in Swin primarily reduces:",["The model's segmentation accuracy","Complexity from quadratic to ~linear","The number of output classes predicted","The amount of training data required"],1,"Global attention is O(N²) in tokens. <b>Windowed attention</b> restricts it to fixed windows → ~O(N); shifting restores cross-window flow."),
+f("MI",2,"What is multi-task learning and why did Swin-HAFNet use it for brain tumors?","Training one network for several tasks (segmentation + classification) with shared features; the tasks regularize each other, improving generalization and data efficiency.","Features good for 'where is the tumor' also inform 'what type', so joint training can beat two isolated models."),
+m("MI",2,"Hounsfield Units are a quantitative scale used in which modality?",["MRI","CT","Ultrasound","PET"],1,"<b>HU</b> calibrate CT: water = 0, air = −1000, bone ≈ +1000. Windowing selects the HU range shown. MRI intensities are not standardized like this."),
+m("MI",1,"For a tumor-detection model, sensitivity is defined as:",["TN/(TN+FP)","TP/(TP+FN)","TP/(TP+FP)","(TP+TN)/all"],1,"<b>Sensitivity (recall)</b> = TP/(TP+FN). Specificity = TN/(TN+FP). Screening usually prioritizes sensitivity."),
+f("MI",2,"Trade-off of 3D vs 2D CNNs for volumetric CT/MRI.","3D CNNs capture inter-slice context but cost far more memory/compute, needing patch-based training. 2D CNNs are cheap and reuse pretrained backbones but ignore through-plane context.","A common compromise is 2.5D (adjacent slices as channels) or patch-based 3D U-Nets."),
+m("MI",2,"The single biggest practical challenge of medical imaging datasets is:",["Having far too much labeled data available","Limited labels, imbalance, domain shift","No medical image file formats existing","Images being too small to carry information"],1,"Annotation is scarce and costly, lesions are rare, and models often fail across scanners (<b>domain shift</b>) — hence augmentation, transfer learning, cross-site validation."),
+m("LLM",1,"The core mechanism letting a Transformer relate distant tokens in parallel is:",["Convolution","Self-attention","Recurrence (LSTM)","Pooling"],1,"<b>Self-attention</b> lets every token attend to every other in one step, capturing long-range dependencies with massive parallelism."),
+f("LLM",1,"Write scaled dot-product attention and explain the scaling term.","Attention(Q,K,V) = softmax(QKᵀ / √d_k) · V. Dividing by √d_k keeps dot products from growing with dimension and saturating the softmax.","Q=queries, K=keys, V=values: how much each token reads from every other token."),
+m("LLM",1,"Why do Transformers need positional encodings?",["To add color information to the tokens","Self-attention is order-invariant","To reduce the number of parameters","To split the raw text into tokens"],1,"Self-attention treats input as a <b>set</b>. Positional encodings (sinusoidal, learned, or rotary) add order so 'dog bites man' ≠ 'man bites dog'."),
+m("LLM",2,"BERT differs from GPT primarily in that BERT is:",["Autoregressive, predicting strictly left-to-right","Bidirectional, trained with masked-language modeling","Built without any Transformer layers","Designed only for image inputs"],1,"<b>BERT</b> is an encoder trained by masking tokens (understanding). <b>GPT</b> is a decoder trained on next-token prediction (generation)."),
+f("LLM",1,"What is the pretraining objective of a GPT-style model?","Autoregressive next-token prediction: given tokens 1..t, predict t+1, maximizing corpus likelihood. No labels needed — the text supervises itself.","This self-supervised objective on huge corpora yields broad language competence before fine-tuning."),
+m("LLM",2,"Multi-head attention is used because it:",["Shrinks the tokenizer's vocabulary size","It attends to many subspaces at once","Removes the need for any training","Encodes only image inputs, not text"],1,"<b>Multiple heads</b> learn different relations (syntax, coreference, position) in parallel, then concatenate and project."),
+f("LLM",1,"What is subword tokenization (BPE) and why use it?","Byte-Pair Encoding merges frequent character pairs into subword units — a fixed vocab balancing sequence length and coverage. Rare words split into known pieces, avoiding out-of-vocabulary failures.","So 'unhappiness' → 'un'+'happi'+'ness', and a novel drug name still tokenizes."),
+m("LLM",2,"In-context learning differs from fine-tuning in that it:",["Permanently updates the model's weights","Uses prompt examples, no weight update","Requires retraining the model from scratch","Works only for image inputs"],1,"<b>In-context learning</b> conditions on prompt examples with frozen weights. Fine-tuning updates parameters. ICL is limited by the context window."),
+m("LLM",2,"The sampling 'temperature' parameter controls:",["The overall size of the model","Diversity of the generated tokens","The choice of subword tokenizer","The maximum context length"],1,"<b>Temperature</b> scales logits before softmax: low → near-deterministic, high → more diverse (and riskier) output."),
+f("LLM",2,"What is Retrieval-Augmented Generation (RAG) and one benefit for medicine?","RAG retrieves relevant documents from a knowledge base and feeds them into the prompt, so the model conditions on them. Benefit: grounds answers in current, verifiable sources and reduces hallucination.","Vital in medicine, where facts change and citations matter — the model can quote a retrieved guideline."),
+m("LLM",2,"The 'context window' of an LLM is:",["The total size of its training set","The max tokens processed at once","The number of Transformer layers","The amount of GPU memory available"],1,"The <b>context window</b> caps tokens (prompt + generation) attended to at once. Long inputs motivate chunking, summarization, or RAG."),
+f("LLM",3,"What is LoRA and why is it useful for domain adaptation (e.g., a medical LLM)?","LoRA freezes the base model and trains small low-rank matrices injected into the weight updates, adapting a huge model with few trainable parameters and little memory; adapters can be swapped per domain.","This makes specializing a general LLM on medical text cheap, without storing a full fine-tuned copy per task."),
+m("LLM",3,"An encoder-only model (e.g., BERT) is generally the best fit for which task?",["Open-ended long-form story generation","Classification and embedding tasks","Free-form autoregressive chat replies","Rendering photorealistic images"],1,"Encoder-only models produce bidirectional <b>embeddings</b> — ideal for classification, retrieval, token labeling (NER on clinical notes). Generation favors decoder-only models."),
+/* ---- ADVANCED SET · boundary-pushers (difficulty 3) ---- */
+m("AN",3,"A patient with cavernous sinus thrombosis develops a lateral gaze palsy before other deficits. Which nerve, running through the sinus next to the internal carotid rather than in its lateral wall, explains this?",["CN III (oculomotor)","CN IV (trochlear)","CN V2 (maxillary)","CN VI (abducens)"],3,"<b>CN VI</b> runs through the middle of the cavernous sinus beside the ICA, so it is often affected first. III, IV, V1 and V2 sit in the lateral wall. Lateral gaze fails because VI drives lateral rectus."),
+m("AN",3,"A mid-shaft humeral fracture injuring the nerve in the radial (spiral) groove classically causes:",["Claw hand from an ulnar nerve lesion","Wrist drop with preserved elbow extension","Waiter's tip posture from a C5-C6 injury","Loss of shoulder abduction from axillary injury"],1,"<b>Radial nerve</b> in the spiral groove: triceps branches leave proximally (elbow extension spared) but wrist/finger extensors are lost → <b>wrist drop</b>, with sensory loss over the dorsal first web space."),
+m("AN",3,"Esophageal varices arise at a porto-systemic anastomosis between the portal left gastric vein and which systemic channel?",["The superior rectal vein of the rectum","Esophageal veins draining to the azygos","Paraumbilical veins around the umbilicus","The splenic vein behind the pancreas"],1,"Left gastric (portal) meets <b>esophageal veins of the azygos system</b> (systemic). Portal hypertension backs this up into varices. Rectal route → hemorrhoids; paraumbilical → caput medusae."),
+f("AN",3,"List, in order, the layers a needle traverses in a midline lumbar puncture.","Skin → superficial fascia → supraspinous ligament → interspinous ligament → ligamentum flavum → epidural space (fat and venous plexus) → dura mater → arachnoid → subarachnoid space (CSF).","Entry is below L2 to avoid the conus medullaris (typically L3–L4 or L4–L5); the pia is not pierced."),
+m("PH",3,"Arterial blood gas shows pH 7.31, PaCO2 60 mmHg, HCO3- 30 mEq/L. The primary disturbance is:",["Metabolic acidosis with respiratory compensation","Respiratory acidosis with renal compensation","Respiratory alkalosis from hyperventilation","Metabolic alkalosis with respiratory compensation"],1,"Low pH with high PaCO2 = <b>respiratory acidosis</b>; the elevated HCO3- signals chronic renal compensation (about +3.5 mEq HCO3- per +10 mmHg CO2)."),
+m("PH",3,"With intracellular [K+] = 140 and extracellular [K+] = 4 mM at body temperature, the K+ equilibrium potential is closest to:",["-90 mV","-60 mV","0 mV","+60 mV"],0,"E_K = 61 × log10(4/140) is about <b>-95 mV</b>. Because the resting membrane is most permeable to K+, resting potential sits near this value."),
+m("PH",3,"In the left-ventricular pressure-volume loop, the phase between mitral-valve closure and aortic-valve opening is:",["Ventricular filling","Isovolumetric contraction","Ejection","Isovolumetric relaxation"],1,"Both valves shut, volume fixed, pressure rising = <b>isovolumetric contraction</b>, ending when LV pressure exceeds aortic pressure and the aortic valve opens."),
+f("PH",3,"Using Laplace's law, explain why small alveoli tend to empty into large ones without surfactant.","Collapsing pressure P = 2T/r. For a fixed surface tension T, a smaller radius r gives a higher pressure, so small alveoli would empty into larger ones. Surfactant lowers T more as alveoli shrink, equalizing pressures.","Surfactant from type II pneumocytes also lowers the work of breathing; deficiency causes neonatal respiratory distress syndrome."),
+m("HI",3,"Rod- or tennis-racket-shaped Birbeck granules on electron microscopy identify:",["Mast cells of the connective tissue","Langerhans (dendritic) cells","Antibody-secreting plasma cells","Kupffer cells of the liver sinusoids"],1,"<b>Langerhans cells</b> are epidermal antigen-presenting dendritic cells; Birbeck granules are their hallmark. Clonal proliferation = Langerhans cell histiocytosis."),
+m("HI",3,"Reinke crystals are a histologic hallmark of which cell?",["Sertoli cell","Leydig cell","Granulosa cell","Theca cell"],1,"<b>Leydig cells</b> of the testicular interstitium produce testosterone and contain eosinophilic Reinke crystals. Sertoli cells instead nurse developing sperm inside the tubule."),
+f("HI",3,"What are Weibel-Palade bodies and which cell contains them?","Rod-shaped storage granules in vascular endothelial cells that hold von Willebrand factor and P-selectin.","On activation they release vWF (platelet adhesion) and present P-selectin (leukocyte rolling), linking endothelium to hemostasis and inflammation."),
+m("EM",3,"DiGeorge syndrome (22q11.2 deletion) with absent thymus and parathyroids reflects maldevelopment of which pharyngeal pouches?",["1st and 2nd","2nd and 3rd","3rd and 4th","4th and 6th"],2,"The <b>3rd and 4th pharyngeal pouches</b> form thymus and parathyroids; failure gives T-cell deficiency, hypocalcemia, and conotruncal cardiac defects."),
+m("EM",3,"Meckel's diverticulum is a persistent remnant of the:",["The allantois of the bladder","Vitelline (omphalomesenteric) duct","The urachus at the bladder apex","The ductus venosus of the liver"],1,"A <b>vitelline duct</b> remnant (rule of 2s). Ectopic gastric or pancreatic mucosa can bleed painlessly in a young child."),
+m("EM",3,"The double-bubble sign of duodenal atresia results from failure of:",["Normal rotation of the midgut loop","Recanalization of the duodenal lumen","Septation of the trachea from the esophagus","Closure of the vitelline duct"],1,"The duodenum is transiently a solid cord that must <b>recanalize</b>; failure → atresia with a double bubble. Associated with Down syndrome."),
+f("EM",3,"In a male fetus, what causes the Mullerian ducts to regress while the Wolffian ducts persist?","Anti-Mullerian hormone (AMH) from Sertoli cells regresses the Mullerian (paramesonephric) ducts, while testosterone from Leydig cells maintains the Wolffian (mesonephric) ducts → epididymis, vas deferens, seminal vesicles.","Loss of AMH or its receptor causes persistent Mullerian duct syndrome — a uterus and tubes in a phenotypic male."),
+m("CV",3,"A 3×3 convolution with dilation rate 2 has an effective receptive field of:",["3×3","5×5","7×7","9×9"],1,"Dilation d expands the kernel to (k-1)·d + 1 = (3-1)·2 + 1 = <b>5×5</b>, enlarging the receptive field with no extra parameters (atrous convolution, DeepLab)."),
+m("CV",3,"To upsample feature maps inside a segmentation decoder, the learnable operation typically used is:",["Max pooling over local windows","Transposed convolution","A pointwise 1×1 convolution","Global average pooling of the map"],1,"A <b>transposed convolution</b> learns the upsampling. To avoid checkerboard artifacts, many U-Nets use bilinear upsampling then an ordinary convolution."),
+m("CV",3,"At inference time, batch normalization uses:",["Statistics of the current test batch","Running mean/variance from training","No normalization at all at test time","Per-image layer-norm statistics"],1,"BN switches to <b>stored running statistics</b> at inference, so a prediction never depends on which other samples share its batch."),
+f("CV",3,"State the complexity of full self-attention in the token count n, and how Swin reduces it.","Full self-attention is O(n² · d), quadratic in the number of tokens. Swin restricts attention to fixed-size local windows (about O(n)) and shifts the windows between layers so information still crosses boundaries.","This linearization makes vision transformers practical on high-resolution medical images."),
+m("MI",3,"Alongside Dice, brain-tumor benchmarks report the 95% Hausdorff distance to capture:",["The mean volumetric overlap","The worst-case boundary deviation","The average voxel intensity error","The model's inference latency"],1,"<b>Hausdorff distance</b> measures the largest surface-to-surface deviation, exposing spurious or missed regions that a volumetric Dice can average away."),
+m("MI",3,"The Tversky loss generalizes the Dice loss by:",["Adding an L2 weight-decay term","Weighting FP versus FN separately","Removing the softmax from the output","Applying Hounsfield-unit windowing"],1,"Tuning the α and β weights lets you penalize <b>false negatives</b> more heavily — raising sensitivity for small lesions in imbalanced tumor segmentation."),
+f("MI",3,"Why is self-supervised pretraining especially valuable in medical imaging?","Expert labels are scarce and expensive, while unlabeled scans are abundant. Pretext tasks (masked-image modeling, contrastive learning) learn representations from unlabeled data, after which a small labeled set fine-tunes them.","It improves data efficiency and robustness to scanner and domain shift — a central obstacle in clinical AI."),
+m("LLM",3,"During autoregressive generation, the KV cache exists to:",["Store the gradients needed for backprop","Avoid recomputing past keys/values","Compress the model's token vocabulary","Mask out all of the future tokens"],1,"Caching past <b>keys and values</b> makes each new token cost about O(n) instead of O(n²); it is the dominant memory cost of long-context inference."),
+m("LLM",3,"A decoder-only language model applies a causal (triangular) attention mask in order to:",["Simply save some GPU memory","Prevent attending to future tokens","Normalize the attention weight rows","Encode each token's absolute position"],1,"The <b>causal mask</b> enforces the autoregressive property so training matches generation; without it a token could see the answer that follows it."),
+f("LLM",3,"Define perplexity and say what a lower value indicates.","Perplexity = exp(mean negative log-likelihood per token) — the model's effective branching factor or uncertainty. Lower perplexity means the model assigns higher probability to the true next tokens, indicating better language modeling.","It is the standard intrinsic language-model metric, though it does not always track downstream task performance."),
+];
+
+const LS_KEY="elixir_v1", LS_LEGACY="warroom_v1";
+const DEFAULT={streak:0,lastStudy:null,xp:0,answered:0,correct:0,byDom:{},sr:{},startDate:todayStr()};
+let S=load();
+function load(){try{
+  let raw=localStorage.getItem(LS_KEY);
+  if(raw===null){ /* one-time migration from the old War Room key, so no streak is lost */
+    const old=localStorage.getItem(LS_LEGACY);
+    if(old!==null){localStorage.setItem(LS_KEY,old);raw=old}
+  }
+  const r=JSON.parse(raw);
+  return r?Object.assign({},DEFAULT,r):Object.assign({},DEFAULT)
+}catch(e){return Object.assign({},DEFAULT)}}
+function save(){localStorage.setItem(LS_KEY,JSON.stringify(S))}
+function todayStr(d){d=d||new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function dnum(s){const p=s.split("-");return Date.UTC(+p[0],+p[1]-1,+p[2])/864e5}
+function today0(){return dnum(todayStr())}
+
+const CAL={termStart:"2026-09-07",midStart:"2026-10-26",midEnd:"2026-10-30",teachEnd:"2026-12-18",finStart:"2026-12-21",finEnd:"2026-12-25"};
+function daysTo(dateStr){return dnum(dateStr)-today0()}
+const PHASES=[
+ {id:"setup",name:"PHASE 0 · Setup & Diagnostic",from:"2026-07-11",to:"2026-07-13",desc:"Calibrate, wire the system, take a baseline drill."},
+ {id:"runway",name:"PHASE 1 · Summer Runway",from:"2026-07-14",to:"2026-09-06",desc:"Pre-teach the core + build the AI stack before class."},
+ {id:"term1",name:"PHASE 2 · Term · Pre-Midterm",from:"2026-09-07",to:"2026-10-25",desc:"Keep pace with lectures, convert notes to cards, never fall behind."},
+ {id:"mid",name:"PHASE 3 · MIDTERMS",from:"2026-10-26",to:"2026-10-30",desc:"Peak recall. Timed past-exam (考古) drilling."},
+ {id:"term2",name:"PHASE 4 · Term · Pre-Final",from:"2026-10-31",to:"2026-12-18",desc:"Second-half material + rolling spaced review of everything."},
+ {id:"finals",name:"PHASE 5 · FINALS",from:"2026-12-19",to:"2026-12-25",desc:"Full-syllabus synthesis. Trust the spaced repetition."},
+ {id:"break",name:"WINTER BREAK",from:"2026-12-26",to:"2027-02-19",desc:"Consolidate, get ahead on 大三下, push the AI research."}
+];
+function currentPhase(){const t=today0();for(const p of PHASES){if(t>=dnum(p.from)&&t<=dnum(p.to))return p}return t<dnum(PHASES[0].from)?PHASES[0]:PHASES[PHASES.length-1]}
+
+const MED_TOPICS=["Upper limb — bones, brachial plexus, axilla","Upper limb — arm/forearm/hand + muscle histology","Thorax wall & breast + Physio: cardiac cycle","Heart anatomy + Embryo: heart tube & septation","Lungs & mediastinum + Physio: pulmonary mechanics","Respiratory histology + Physio: gas exchange & O2–Hb curve","Abdominal wall & inguinal canal + Embryo: gut rotation","Foregut GI anatomy + Histo: GI wall layers","Mid/hindgut + Physio: GI secretion & motility","Liver, biliary tree, pancreas + Histo: liver lobule","Kidneys & retroperitoneum + Physio: GFR & tubular transport","Nephron histology + Physio: countercurrent & ADH","Pelvis & perineum + Embryo: urogenital development","Lower limb — gluteal, femoral triangle, vessels","Lower limb — leg & foot + Physio: skeletal muscle contraction","Head & neck — skull foramina + cranial nerves","Neuroanatomy: brainstem & tracts + Physio: membrane potentials","Neuroanatomy: cerebrum & blood supply + Histo: nervous tissue","Endocrine anatomy + Physio: hormone axes","Integration: germ layers, neural crest, whole-body review"];
+const AI_TOPICS=["Python/NumPy refresh — image as an array","Linear algebra for vision — convolution as a dot product","Image filtering — kernels, edges (Sobel), blurring","CNN fundamentals — conv, stride, padding, receptive field","Pooling, ReLU, and architectures (LeNet → ResNet)","Training — loss, backprop, SGD/Adam, over/underfitting","Regularization — dropout, batch norm, augmentation","Transfer learning & fine-tuning (ImageNet → medical)","Segmentation — U-Net encoder/decoder + skip connections","Segmentation metrics & losses — Dice, IoU, focal, Tversky","Medical imaging — MRI/CT, HU, T1/T2/FLAIR modalities","BraTS & brain-tumor pipeline (Swin-HAFNet paper)","Attention & Transformers — self-attention, multi-head","ViT & Swin — windowed / shifted attention","Multi-task learning — segmentation + classification","LLM basics — architecture, tokenization, pretraining","LLM — encoder vs decoder, BERT vs GPT, context window","LLM adaptation — fine-tuning, in-context, RAG, LoRA","RL foundations — MDP, reward, policy (beneficial-RL paper)","Integration — read & critique one medical-AI paper"];
+
+const SECTIONS=["today","drill","cards","roadmap","progress"];
+function go(t){SECTIONS.forEach(s=>document.getElementById(s).classList.toggle("hide",s!==t));document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("on",b.dataset.t===t));if(t==="progress")renderProgress();if(t==="cards")renderCardsHome();if(t==="roadmap")renderRoadmap();if(t==="today")renderToday();window.scrollTo({top:0,behavior:"smooth"})}
+document.querySelectorAll("#nav button").forEach(b=>b.onclick=()=>go(b.dataset.t));
+
+function renderCounters(){
+  document.getElementById("cd-term").textContent=Math.max(0,daysTo(CAL.termStart));
+  document.getElementById("cd-mid").textContent=Math.max(0,daysTo(CAL.midStart));
+  document.getElementById("cd-fin").textContent=Math.max(0,daysTo(CAL.finStart));
+  document.getElementById("st-streak").textContent=S.streak||0;
+  document.getElementById("bank-n").textContent=BANK.length;
+}
+
+function dayIndex(){return today0()-dnum("2026-07-14")}
+function renderToday(){
+  const ph=currentPhase();
+  document.getElementById("phase-pill").textContent=ph.name;
+  document.getElementById("phase-desc").textContent=ph.desc;
+  const now=new Date();
+  document.getElementById("today-date").textContent="· "+now.toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric",year:"numeric"});
+  const di=Math.max(0,dayIndex());
+  const med=MED_TOPICS[((di%MED_TOPICS.length)+MED_TOPICS.length)%MED_TOPICS.length];
+  const ai=AI_TOPICS[((di%AI_TOPICS.length)+AI_TOPICS.length)%AI_TOPICS.length];
+  document.getElementById("today-focus").innerHTML="<b style='color:var(--med)'>Med</b> · "+med+"<br><b style='color:var(--ai)'>AI</b> · "+ai;
+  const blocks=scheduleFor(ph,med,ai);
+  document.getElementById("schedule").innerHTML=blocks.map(b=>
+    '<div class="block"><div class="t">'+b.t+'</div><div class="c"><div class="k"><span class="dot '+b.side+'"></span>'+b.k+'</div><div class="d">'+b.d+'</div></div></div>').join("");
+  document.getElementById("due-inline").textContent=dueCards().length;
+}
+function scheduleFor(ph,med,ai){
+  if(ph.id==="mid"||ph.id==="finals"){
+    return [
+     {t:"0:00",side:"both",k:"Warm-up: all due cards",d:"Clear the spaced-repetition queue. No new material during exam week."},
+     {t:"0:30",side:"med",k:"考古 past-exam block (timed)",d:med+" — a full past paper under the clock, then mark ruthlessly."},
+     {t:"2:00",side:"med",k:"Fix the misses",d:"Every wrong answer → a new flashcard + one line on why you missed it."},
+     {t:"2:45",side:"ai",k:"Light AI upkeep",d:"20-min recall only ("+ai+"). Protect the med exam; keep the AI thread warm."},
+     {t:"3:15",side:"both",k:"Synthesis map",d:"Blank-page brain-dump of the highest-yield system, then compare to notes."}
+    ];
+  }
+  return [
+   {t:"0:00",side:"both",k:"Active-recall warm-up",d:"20 min — clear due flashcards + yesterday's misses before anything new."},
+   {t:"0:20",side:"med",k:"MED new material",d:med+". Read the atlas/Guyton section, then draw & label from memory."},
+   {t:"1:50",side:"med",k:"MED drill + 考古",d:"Applied questions and a past-exam set on the same topic. Speak answers aloud."},
+   {t:"2:45",side:"ai",k:"AI concept + hands-on",d:ai+". Watch/read, then implement the smallest working version in a notebook."},
+   {t:"4:15",side:"ai",k:"AI paper / code",d:"Reproduce one figure or write one function from a target paper."},
+   {t:"5:05",side:"both",k:"Synthesis & card-forging",d:"25 min — make cards from today, then teach-back the two hardest ideas aloud."}
+  ];
+}
+
+let drill={items:[],i:0,correct:0,answered:false};
+function renderDomChips(){
+  const c=document.getElementById("dom-chips");c.innerHTML="";
+  Object.keys(DOMAINS).forEach(k=>{
+    const el=document.createElement("div");
+    el.className="chip on"+(DOMAINS[k].side==="ai"?" ai":"");
+    el.textContent=DOMAINS[k].n;el.dataset.k=k;
+    el.onclick=()=>{el.classList.toggle("on")};
+    c.appendChild(el);
+  });
+}
+function selectedDomains(){return [...document.querySelectorAll("#dom-chips .chip.on")].map(e=>e.dataset.k)}
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function buildDrillFromToday(){
+  document.getElementById("d-count").value=20;
+  document.getElementById("d-diff").value="3";
+  renderDomChips();
+}
+function startDrill(){
+  const doms=selectedDomains();if(!doms.length){alert("Pick at least one domain.");return}
+  const diff=+document.getElementById("d-diff").value;
+  let n=Math.max(3,Math.min(60,+document.getElementById("d-count").value||20));
+  let pool=BANK.map((q,idx)=>({q,idx})).filter(o=>doms.includes(o.q.dm)&&(diff===0||o.q.df===diff));
+  if(!pool.length){alert("No questions match that filter — loosen difficulty.");return}
+  drill={items:shuffle(pool).slice(0,n).map(o=>{if(o.q.ty==="mcq"){const order=shuffle(o.q.opts.map((_,k)=>k));o.shufOpts=order.map(k=>o.q.opts[k]);o.shufAns=order.indexOf(o.q.ans);}return o;}),i:0,correct:0,answered:false};
+  document.getElementById("drill-setup").classList.add("hide");
+  document.getElementById("drill-done").classList.add("hide");
+  document.getElementById("drill-run").classList.remove("hide");
+  renderDrillQ();
+}
+function renderDrillQ(){
+  const o=drill.items[drill.i];const q=o.q;drill.answered=false;
+  document.getElementById("drill-prog").textContent="Q "+(drill.i+1)+" / "+drill.items.length;
+  document.getElementById("drill-score").textContent=drill.correct+" correct";
+  document.getElementById("drill-bar").style.width=(100*drill.i/drill.items.length)+"%";
+  document.getElementById("drill-next").disabled=true;
+  const dm=DOMAINS[q.dm];const col=dm.side==="ai"?"var(--ai)":"var(--med)";
+  let h='<div class="q-card"><div class="q-meta"><span class="q-domain" style="background:'+(dm.side==="ai"?"rgba(143,160,201,.16)":"rgba(127,179,164,.16)")+';color:'+col+'">'+dm.n+'</span><span>difficulty '+q.df+' · '+(q.ty==="mcq"?"MCQ":"recall")+'</span></div>';
+  h+='<div class="q-text">'+q.q+'</div>';
+  if(q.ty==="mcq"){
+    h+='<div id="opts">'+o.shufOpts.map((op,i)=>'<button class="opt" onclick="answerMCQ('+i+')"><span class="ltr">'+"ABCD"[i]+'</span>'+op+'</button>').join("")+'</div>';
+  }else{
+    h+='<div id="reveal" class="reveal" onclick="revealFlash()">Tap to reveal — recall it first, out loud.</div>';
+  }
+  h+='<div id="exp"></div></div>';
+  document.getElementById("drill-q").innerHTML=h;
+}
+function answerMCQ(i){
+  if(drill.answered)return;drill.answered=true;
+  const o=drill.items[drill.i];const q=o.q;const ca=o.shufAns;
+  const opts=document.querySelectorAll("#opts .opt");
+  opts.forEach((el,idx)=>{el.classList.add("dim");el.onclick=null;if(idx===ca)el.classList.remove("dim"),el.classList.add("correct");if(idx===i&&i!==ca)el.classList.remove("dim"),el.classList.add("wrong")});
+  const ok=i===ca;if(ok)drill.correct++;
+  recordAnswer(q.dm,ok);
+  document.getElementById("exp").innerHTML='<div class="exp"><b>'+(ok?"✓ Correct.":"✗ Not quite.")+'</b> '+q.exp+'</div>';
+  document.getElementById("drill-score").textContent=drill.correct+" correct";
+  document.getElementById("drill-next").disabled=false;
+}
+function revealFlash(){
+  if(drill.answered)return;drill.answered=true;
+  const o=drill.items[drill.i];const q=o.q;
+  document.getElementById("reveal").outerHTML='<div class="q-card" style="border-color:var(--good);margin-top:14px;background:rgba(130,180,147,.06)"><div style="font-size:15px;line-height:1.55">'+q.ans+'</div></div>'+(q.exp?'<div class="exp">'+q.exp+'</div>':'');
+  document.getElementById("exp").innerHTML='<div class="grade-row"><button class="g-again" onclick="gradeFlash(0)">Missed it</button><button class="g-good" onclick="gradeFlash(1)">Got it</button><button class="g-easy" onclick="gradeFlash(2)">Easy</button></div>';
+  document.getElementById("drill-next").disabled=false;
+}
+function gradeFlash(g){
+  const o=drill.items[drill.i];const q=o.q;
+  if(g>0)drill.correct++;
+  recordAnswer(q.dm,g>0);scheduleCard(o.idx,g);
+  document.getElementById("exp").innerHTML='<div class="muted" style="margin-top:12px">Logged. Next →</div>';
+  document.getElementById("drill-score").textContent=drill.correct+" correct";
+}
+function nextDrill(){
+  drill.i++;
+  if(drill.i>=drill.items.length){finishDrill();return}
+  renderDrillQ();
+}
+function finishDrill(){
+  document.getElementById("drill-run").classList.add("hide");
+  const pct=Math.round(100*drill.correct/drill.items.length);
+  bumpStreak();
+  let verdict=pct>=95?"Near-perfect. Raise the difficulty.":pct>=80?"Strong — but 80% isn't the standard. Hunt every miss.":pct>=60?"Passable. Drill the weak domains until automatic.":"Below standard. This is the work — run it again.";
+  document.getElementById("drill-done").innerHTML='<div class="panel"><h2>Drill complete</h2><div class="stat-grid" style="margin-top:12px"><div class="stat"><div class="v">'+drill.correct+'/'+drill.items.length+'</div><div class="k">score</div></div><div class="stat"><div class="v">'+pct+'%</div><div class="k">accuracy</div></div><div class="stat"><div class="v">+'+(drill.correct*10)+'</div><div class="k">XP</div></div></div><p class="muted" style="margin-top:14px">'+verdict+'</p><div class="row" style="margin-top:14px"><button class="btn" onclick="go(\'drill\');resetDrillSetup()">New drill</button><button class="btn ai" onclick="go(\'cards\');startCards(\'due\')">Review cards</button></div></div>';
+  document.getElementById("drill-done").classList.remove("hide");
+  S.xp+=drill.correct*10;save();
+}
+function resetDrillSetup(){document.getElementById("drill-done").classList.add("hide");document.getElementById("drill-run").classList.add("hide");document.getElementById("drill-setup").classList.remove("hide")}
+function quitDrill(){resetDrillSetup()}
+
+const BOX_DAYS=[0,1,2,4,9,17];
+function scheduleCard(idx,g){
+  const cur=S.sr[idx]||{box:0};
+  let box=cur.box||0;
+  if(g===0)box=1;else if(g===1)box=Math.min(box+1,5);else box=Math.min(box+2,5);
+  S.sr[idx]={box,due:today0()+BOX_DAYS[box]};save();
+}
+function dueCards(){return BANK.map((q,idx)=>idx).filter(idx=>{const c=S.sr[idx];return c&&c.due<=today0()})}
+function newCards(){return BANK.map((q,idx)=>idx).filter(idx=>!S.sr[idx])}
+let cardRun={items:[],i:0,shown:false};
+function renderCardsHome(){document.getElementById("due-count").textContent=dueCards().length+" due"}
+function startCards(mode){
+  let ids;
+  if(mode==="due")ids=dueCards();
+  else if(mode==="new")ids=newCards().slice(0,20);
+  else ids=BANK.map((q,i)=>i);
+  if(!ids.length){document.getElementById("card-run").innerHTML='<div class="panel"><div class="empty">Nothing '+mode+' right now — learn new cards or cram all.</div></div>';document.getElementById("card-run").classList.remove("hide");return}
+  cardRun={items:shuffle(ids),i:0,shown:false};
+  document.getElementById("card-run").classList.remove("hide");
+  renderCard();
+}
+function renderCard(){
+  if(cardRun.i>=cardRun.items.length){
+    bumpStreak();
+    document.getElementById("card-run").innerHTML='<div class="panel"><div class="empty">Session done — '+cardRun.items.length+' cards · streak '+S.streak+'.</div><div class="row" style="justify-content:center"><button class="btn" onclick="startCards(\'due\')">More due</button><button class="btn ai" onclick="go(\'drill\')">Go drill</button></div></div>';
+    return;
+  }
+  const idx=cardRun.items[cardRun.i];const q=BANK[idx];cardRun.shown=false;
+  const dm=DOMAINS[q.dm];const col=dm.side==="ai"?"var(--ai)":"var(--med)";const box=(S.sr[idx]&&S.sr[idx].box)||0;
+  let h='<div class="panel"><div class="q-meta"><span class="q-domain" style="background:'+(dm.side==="ai"?"rgba(143,160,201,.16)":"rgba(127,179,164,.16)")+';color:'+col+'">'+dm.n+'</span><span>card '+(cardRun.i+1)+'/'+cardRun.items.length+' · box '+box+'</span></div>';
+  h+='<div class="q-text" style="margin-top:6px">'+q.q+(q.ty==="mcq"?'<div class="muted" style="font-weight:400;margin-top:8px;font-size:13px">('+q.opts.length+' options — recall the answer, do not just recognize it)</div>':'')+'</div>';
+  h+='<div id="c-body"><div class="reveal" onclick="showCard()">Recall it out loud — then tap to check.</div></div></div>';
+  document.getElementById("card-run").innerHTML=h;
+}
+function showCard(){
+  const idx=cardRun.items[cardRun.i];const q=BANK[idx];cardRun.shown=true;
+  const ans=q.ty==="mcq"?q.opts[q.ans]:q.ans;
+  let h='<div class="q-card" style="border-color:var(--good);background:rgba(130,180,147,.06)"><div style="font-size:15px;line-height:1.55">'+ans+'</div></div>';
+  if(q.exp)h+='<div class="exp">'+q.exp+'</div>';
+  h+='<div class="grade-row"><button class="g-again" onclick="gradeCard(0)">Missed</button><button class="g-good" onclick="gradeCard(1)">Got it</button><button class="g-easy" onclick="gradeCard(2)">Easy</button></div>';
+  document.getElementById("c-body").innerHTML=h;
+}
+function gradeCard(g){
+  const idx=cardRun.items[cardRun.i];
+  scheduleCard(idx,g);recordAnswer(BANK[idx].dm,g>0);
+  cardRun.i++;renderCard();
+}
+
+function recordAnswer(dm,ok){S.answered++;if(ok)S.correct++;if(!S.byDom[dm])S.byDom[dm]={a:0,c:0};S.byDom[dm].a++;if(ok)S.byDom[dm].c++;save()}
+function bumpStreak(){const t=todayStr();if(S.lastStudy===t)return;const y=todayStr(new Date(Date.now()-864e5));S.streak=(S.lastStudy===y)?(S.streak+1):1;S.lastStudy=t;save();renderCounters()}
+function logStudy(){bumpStreak();alert("Logged · streak "+S.streak+" day(s).")}
+function renderProgress(){
+  const acc=S.answered?Math.round(100*S.correct/S.answered):0;
+  const mature=Object.values(S.sr).filter(c=>c.box>=4).length;
+  document.getElementById("stat-grid").innerHTML=
+   stat(S.streak,"day streak")+stat(S.answered,"questions answered")+stat(acc+"%","overall accuracy")+stat(S.xp,"XP")+stat(Object.keys(S.sr).length+"/"+BANK.length,"cards seen")+stat(mature,"mature cards");
+  const db=document.getElementById("dom-stats");db.innerHTML="";
+  Object.keys(DOMAINS).forEach(k=>{
+    const d=S.byDom[k]||{a:0,c:0};const p=d.a?Math.round(100*d.c/d.a):0;
+    db.innerHTML+='<div class="dombar"><div class="lab"><span>'+DOMAINS[k].n+'</span><span class="pct">'+d.c+'/'+d.a+' · '+p+'%</span></div><div class="progress-bar"><i style="width:'+p+'%"></i></div></div>';
+  });
+  const bx=[0,0,0,0,0,0];Object.values(S.sr).forEach(c=>bx[c.box||0]++);
+  const bs=document.getElementById("box-stats");const max=Math.max(1,...bx);
+  bs.innerHTML=bx.map((n,i)=>'<div class="dombar"><div class="lab"><span>Box '+i+(i===0?" (new)":i>=4?" (mature)":"")+'</span><span class="pct">'+n+' cards</span></div><div class="progress-bar"><i style="width:'+(100*n/max)+'%"></i></div></div>').join("");
+}
+function stat(v,k){return '<div class="stat"><div class="v">'+v+'</div><div class="k">'+k+'</div></div>'}
+
+function renderRoadmap(){
+  document.getElementById("rm-today").textContent=new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});
+  const rm=[
+   {h:"Now → Jul 13 · Setup",w:"Phase 0",li:["Baseline drill in every domain (find weak spots).","Skim Guyton ch. 1–5 + atlas orientation.","Commit to the daily 5–6h block and the streak."]},
+   {h:"Jul 14 → Sep 6 · Summer Runway (8 wks)",w:"Phase 1 · pre-teach",li:["Weeks 1–2: Upper & lower limb anatomy + CNN fundamentals.","Weeks 3–4: Thorax/abdomen + histology + segmentation (U-Net, Dice/IoU).","Weeks 5–6: Kidney/pelvis + cardio/renal/resp physiology + medical imaging (MRI/CT, BraTS, Swin).","Weeks 7–8: Head/neck + neuroanatomy + embryology + Transformers/LLM/RAG + read the 3 papers.","Daily: 20 new cards each side, all reviewed via spaced repetition."]},
+   {h:"Sep 7 → Oct 25 · Term, Pre-Midterm",w:"Phase 2 · keep-up",li:["Match every lecture same-day: notes → cards within 24h.","Friday = weekly synthesis + past-exam (考古) set.","Protect the AI block even when med load spikes."]},
+   {h:"Oct 26 → Oct 30 · MIDTERMS",w:"Phase 3",li:["Timed 考古 papers daily; mark ruthlessly.","Every miss → a card + a one-line reason.","AI on maintenance (recall only)."]},
+   {h:"Oct 31 → Dec 18 · Term, Pre-Final",w:"Phase 4",li:["Second-half systems + rolling review of ALL prior material.","Segment a public BraTS case end-to-end.","Re-read Swin-HAFNet — now every block should make sense."]},
+   {h:"Dec 19 → Dec 25 · FINALS",w:"Phase 5",li:["Full-syllabus synthesis maps; trust the SR queue.","Sleep is a study tool — protect it.","Two full mock papers per subject."]},
+   {h:"After Dec 26 · Winter Break",w:"Consolidate",li:["Get ahead on 大三下.","Turn the AI track into a reproducible notebook / mini-paper."]}
+  ];
+  document.getElementById("rm-body").innerHTML=rm.map(p=>'<div class="rm-phase"><div class="when">'+p.w+'</div><h3>'+p.h+'</h3><ul>'+p.li.map(x=>'<li>'+x+'</li>').join("")+'</ul></div>').join("");
+}
+
+function exportState(){const blob=new Blob([JSON.stringify(S,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="elixir_progress_"+todayStr()+".json";a.click()}
+function importState(){
+  const inp=document.createElement("input");inp.type="file";inp.accept="application/json,.json";
+  inp.onchange=function(){
+    const file=inp.files&&inp.files[0]; if(!file) return;
+    const rd=new FileReader();
+    rd.onload=function(){
+      try{
+        const o=JSON.parse(rd.result);
+        if(!o||typeof o!=="object"||Array.isArray(o)) throw new Error("shape");
+        if(!confirm("Replace this device's progress with the imported file?\n\nStreak, card scheduling and stats will be overwritten. This cannot be undone.")) return;
+        S=Object.assign({},DEFAULT,o); save();
+        renderCounters(); renderProgress(); renderToday();
+        alert("Import done.");
+      }catch(e){ alert("That file could not be read as Elixir progress JSON."); }
+    };
+    rd.readAsText(file);
+  };
+  inp.click();
+}
+function resetState(){if(confirm("Erase all progress, streak and card scheduling? This cannot be undone.")){localStorage.removeItem(LS_KEY);S=Object.assign({},DEFAULT);save();renderCounters();renderProgress();renderToday();alert("Reset done.")}}
+renderCounters();renderDomChips();renderToday();
+</script>
+<script>
+/* Service worker: only over http(s). Opened as a local file:// this is skipped silently. */
+if("serviceWorker" in navigator && location.protocol.indexOf("http")===0){
+  window.addEventListener("load",function(){
+    navigator.serviceWorker.register("./sw.js").catch(function(){});
+  });
+}
+</script>
+</body>
+</html>

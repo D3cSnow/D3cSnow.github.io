@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>D3cSnow</title>
+<meta name="description" content="温修群 · NTU 醫學系 · 醫學影像 AI">
+<meta name="theme-color" content="#17191e">
+<meta name="color-scheme" content="dark">
+<link rel="icon" href="./elixir/icon.svg" type="image/svg+xml">
+<style>
+:root{
+  --bg:#17191e; --panel:#1d2027; --line:#2a2e37;
+  --ink:#e8eaed; --dim:#9aa1ac; --faint:#6c727c;
+  --acc:#7fb3a4; --acc2:#8fa0c9;
+  --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans TC",sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:rgba(127,179,164,.18)}
+html{-webkit-text-size-adjust:100%}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
+  font-family:var(--sans);-webkit-font-smoothing:antialiased;min-height:100vh}
+.wrap{max-width:720px;margin:0 auto;
+  padding:clamp(32px,9vh,80px) 20px calc(60px + env(safe-area-inset-bottom))}
+header{border-bottom:1px solid var(--line);padding-bottom:22px;margin-bottom:30px}
+h1{margin:0;font-size:clamp(24px,6vw,30px);font-weight:600;letter-spacing:.3px}
+.sub{color:var(--faint);font-size:12.5px;margin-top:8px;
+  font-family:var(--mono);letter-spacing:.5px;line-height:1.7}
+.label{font-size:11px;color:var(--faint);text-transform:uppercase;
+  letter-spacing:1.4px;margin:0 0 14px}
+a.card{display:flex;align-items:center;gap:16px;text-decoration:none;color:inherit;
+  background:var(--panel);border:1px solid var(--line);border-radius:12px;
+  padding:18px;margin-bottom:12px;transition:.15s}
+a.card:hover{border-color:var(--acc);transform:translateY(-1px)}
+a.card:active{transform:translateY(0)}
+a.card img{width:46px;height:46px;border-radius:11px;flex:0 0 auto}
+.card .t{font-size:16.5px;font-weight:600;margin-bottom:4px}
+.card .d{font-size:13px;color:var(--dim);line-height:1.5}
+.card .go{margin-left:auto;color:var(--faint);font-family:var(--mono);
+  font-size:18px;flex:0 0 auto}
+a.card:hover .go{color:var(--acc)}
+.note{color:var(--faint);font-size:12.5px;line-height:1.75;margin-top:26px;
+  padding-top:20px;border-top:1px solid var(--line)}
+.note b{color:var(--dim);font-weight:600}
+@media (max-width:420px){
+  a.card{padding:15px;gap:13px}
+  a.card img{width:40px;height:40px}
+  .card .t{font-size:15.5px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>D3cSnow</h1>
+    <div class="sub">温修群 · NTU 醫學系<br>medical imaging AI · computer vision</div>
+  </header>
+
+  <p class="label">Apps</p>
+
+  <a class="card" href="./elixir/">
+    <img src="./elixir/icon-192.png" alt="">
+    <div>
+      <div class="t">Elixir</div>
+      <div class="d">115-1 daily study system — 間隔複習、每日測驗、學期路線圖</div>
+    </div>
+    <span class="go">→</span>
+  </a>
+
+  <div class="note">
+    <b>Elixir 的資料存在你目前這台裝置的瀏覽器裡</b>，手機與電腦不會自動同步。<br>
+    要換裝置時，用 Progress 分頁的 <b>Export</b> 匯出 JSON，在新裝置上 <b>Import</b> 匯入。
+  </div>
+
+</div>
+</body>
+</html>
