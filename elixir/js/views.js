@@ -92,5 +92,91 @@ Elixir.views = (function () {
     }).join("");
   }
 
-  return { today: today, roadmap: roadmap, progress: progress };
+  /* sync ------------------------------------------------------------------- */
+
+  var STATUS_TEXT = {
+    off:     "",
+    idle:    "Not paired yet.",
+    syncing: "Syncing…",
+    ok:      "In sync.",
+    offline: "Offline — changes are saved here and will sync when you reconnect.",
+    error:   "Could not sync."
+  };
+
+  function relative(iso) {
+    if (!iso) return "never";
+    var mins = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
+    if (mins < 1)    return "just now";
+    if (mins < 60)   return mins + " min ago";
+    var hrs = Math.round(mins / 60);
+    if (hrs < 24)    return hrs + (hrs === 1 ? " hour ago" : " hours ago");
+    var days = Math.round(hrs / 24);
+    return days + (days === 1 ? " day ago" : " days ago");
+  }
+
+  function syncPanel() {
+    var sync = Elixir.sync;
+    var host = $("sync-panel");
+
+    if (!sync.configured()) {
+      host.innerHTML =
+        '<p class="note">Sync is not set up. Without it, this browser keeps its own copy and ' +
+        "nothing moves between your phone and your laptop on its own — use Export and Import " +
+        "below.</p>" +
+        '<p class="note faint" style="font-size:14px">To switch it on: create a free Supabase ' +
+        "project, run <span class=\"mono\">supabase/schema.sql</span>, then paste the project URL " +
+        "and anon key into <span class=\"mono\">js/sync-config.js</span>. Setup notes are in the README.</p>";
+      return;
+    }
+
+    if (!sync.enabled()) {
+      host.innerHTML =
+        '<p class="note">Pair this device to keep every device on the same queue. Start on the ' +
+        "device that already has your progress — create a code there, then enter it everywhere else.</p>" +
+        '<div class="row" style="margin-top:22px">' +
+          '<button class="btn" type="button" id="sync-create">Create a pairing code</button>' +
+          '<button class="btn quiet" type="button" id="sync-join-open">I have a code</button>' +
+        "</div>" +
+        '<div id="sync-join" class="hide" style="margin-top:22px">' +
+          '<label class="f" for="sync-code">Pairing code</label>' +
+          '<div class="row">' +
+            '<input type="text" id="sync-code" class="mono" placeholder="XXXX-XXXX-XXXX-XXXX" ' +
+                   'autocomplete="off" autocapitalize="characters" spellcheck="false" style="width:15em">' +
+            '<button class="btn" type="button" id="sync-join-go">Pair</button>' +
+          "</div>" +
+        "</div>";
+      return;
+    }
+
+    host.innerHTML =
+      '<p class="note">This device is paired. Reviews merge card by card, so studying on your ' +
+      "phone and then opening your laptop never loses either side.</p>" +
+      '<div class="vault-key" id="vault-key" title="Click to reveal">' +
+        '<span class="masked">•••• •••• •••• ••••</span>' +
+      "</div>" +
+      '<p class="note faint" style="font-size:14px">Anyone with this code can read and change ' +
+      "your progress, and it cannot be recovered if you lose every paired device. Keep a copy " +
+      "somewhere safe.</p>" +
+      '<div class="row" style="margin-top:22px">' +
+        '<button class="btn" type="button" id="sync-now">Sync now</button>' +
+        '<button class="btn quiet" type="button" id="sync-copy">Copy code</button>' +
+        '<button class="btn quiet" type="button" id="sync-off">Unpair this device</button>' +
+      "</div>";
+  }
+
+  function syncStatus(s) {
+    var el = $("sync-status");
+    if (!el) return;
+    if (!Elixir.sync.configured() || s.state === "off") { el.textContent = ""; return; }
+
+    var text = STATUS_TEXT[s.state] || "";
+    if (s.state === "ok")    text += " Last synced " + relative(Elixir.sync.lastSync()) + ".";
+    if (s.state === "error") text += " " + s.detail + " Your progress on this device is safe.";
+
+    el.textContent = text;
+    el.className = "sync-status" + (s.state === "error" ? " bad" : "");
+  }
+
+  return { today: today, roadmap: roadmap, progress: progress,
+           syncPanel: syncPanel, syncStatus: syncStatus };
 })();

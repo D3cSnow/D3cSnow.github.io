@@ -31,7 +31,16 @@ Elixir.scheduler = (function () {
     else if (g === GRADE.GOOD) box = Math.min(box + 1, MAX_BOX);
     else                       box = Math.min(box + 2, MAX_BOX);
 
-    state.data.sr[id] = { box: box, due: state.today0() + BOX_DAYS[box] };
+    /* `t` is the wall-clock moment of this review. It exists purely so that two
+       devices can be merged: when both have graded the same card, the merge
+       takes the genuinely more recent review rather than guessing from the box
+       number. Entries written before sync existed have no `t`; the merge falls
+       back to box, then due date, for those. */
+    state.data.sr[id] = {
+      box: box,
+      due: state.today0() + BOX_DAYS[box],
+      t:   Date.now()
+    };
     state.save();
     return box;
   }

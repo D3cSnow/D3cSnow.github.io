@@ -23,7 +23,7 @@ Elixir.app = (function () {
 
     if (name === "today")    Elixir.views.today();
     if (name === "roadmap")  Elixir.views.roadmap();
-    if (name === "progress") Elixir.views.progress();
+    if (name === "progress") { Elixir.views.progress(); Elixir.views.syncPanel(); }
     if (name === "cards")    Elixir.cards.refreshHeader();
 
     if (location.hash.slice(1) !== name) history.replaceState(null, "", "#" + name);
@@ -75,6 +75,16 @@ Elixir.app = (function () {
     applyTheme();
   }
 
+  function copyKey() {
+    var key = Elixir.sync.formatKey(Elixir.sync.vaultKey());
+    var done = function () { $("sync-status").textContent = "Pairing code copied."; };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(key).then(done, function () { prompt("Pairing code:", key); });
+    } else {
+      prompt("Pairing code:", key);
+    }
+  }
+
   function markStudied() {
     var advanced = state.bumpStreak();
     refreshCounters();
@@ -105,6 +115,61 @@ Elixir.app = (function () {
     });
 
     $("theme-btn").addEventListener("click", cycleTheme);
+
+    /* Sync controls are re-rendered whenever the panel changes, so they are
+       handled by delegation from the section rather than bound individually. */
+    $("progress").addEventListener("click", function (e) {
+      var t = e.target.closest("button, .vault-key");
+      if (!t) return;
+      var sync = Elixir.sync;
+
+      switch (t.id) {
+        case "sync-create":
+          t.disabled = true;
+          sync.createVault().then(Elixir.views.syncPanel);
+          break;
+
+        case "sync-join-open":
+          $("sync-join").classList.remove("hide");
+          $("sync-code").focus();
+          break;
+
+        case "sync-join-go":
+          var input = $("sync-code");
+          t.disabled = true;
+          sync.joinVault(input.value)
+            .then(function () { Elixir.views.syncPanel(); refreshCounters(); Elixir.views.progress(); })
+            .catch(function (err) {
+              t.disabled = false;
+              $("sync-status").textContent = err.message;
+              $("sync-status").className = "sync-status bad";
+            });
+          break;
+
+        case "sync-now":
+          sync.run("manual");
+          break;
+
+        case "sync-copy":
+          copyKey();
+          break;
+
+        case "sync-off":
+          if (confirm("Unpair this device?\n\nProgress already on this device stays exactly as " +
+                      "it is. It simply stops syncing, and the other devices carry on without it.")) {
+            sync.disconnect();
+            Elixir.views.syncPanel();
+          }
+          break;
+      }
+
+      if (t.classList && t.classList.contains("vault-key")) {
+        t.innerHTML = '<span class="mono">' + Elixir.sync.formatKey(Elixir.sync.vaultKey()) + "</span>";
+      }
+    });
+
+    Elixir.sync.onStatus(Elixir.views.syncStatus);
+    Elixir.sync.init();
     $("export-btn").addEventListener("click", state.exportFile);
     $("import-btn").addEventListener("click", function () {
       state.importFile(function () { refreshCounters(); Elixir.views.progress(); Elixir.views.today(); });

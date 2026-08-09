@@ -12,7 +12,7 @@
    Bump CACHE whenever you deploy. Old caches are deleted on activate.
    --------------------------------------------------------------------------- */
 
-const CACHE = "elixir-v4";
+const CACHE = "elixir-v5";
 const TIMEOUT = 3000;
 
 const ASSETS = [
@@ -22,6 +22,8 @@ const ASSETS = [
   "./css/tokens.css",
   "./css/app.css",
   "./data/bank.js",
+  "./js/sync-config.js",
+  "./js/sync.js",
   "./js/state.js",
   "./js/scheduler.js",
   "./js/plan.js",

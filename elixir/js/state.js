@@ -125,12 +125,33 @@ Elixir.state = (function () {
 
   var S = load();
 
+  var listeners = [];
+
+  /* Anything that needs to react to a write registers here. Only the sync
+     client uses it, and sync is optional — with no listener this is inert. */
+  function onSave(fn) { listeners.push(fn); }
+
   function save() {
     try {
       localStorage.setItem(KEY, JSON.stringify(S));
     } catch (e) {
       if (window.console) console.warn("Elixir: could not save — storage full or blocked.", e);
     }
+    for (var i = 0; i < listeners.length; i++) {
+      try { listeners[i](); } catch (e) { /* a listener must never break a save */ }
+    }
+  }
+
+  /* Used by the sync client after a merge: swap in a whole new state without
+     re-entering the save path that would immediately push it back again. */
+  function replace(next, quiet) {
+    S = hydrate(next);
+    if (quiet) {
+      try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
+    } else {
+      save();
+    }
+    return S;
   }
 
   /* Write a migration straight back to storage instead of waiting for the user
@@ -218,6 +239,9 @@ Elixir.state = (function () {
   return {
     get data()  { return S; },
     save:         save,
+    onSave:       onSave,
+    replace:      replace,
+    defaults:     defaults,
     recordAnswer: recordAnswer,
     bumpStreak:   bumpStreak,
     exportFile:   exportFile,

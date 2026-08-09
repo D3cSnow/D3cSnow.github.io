@@ -32,7 +32,7 @@ function boot(seedLocalStorage){
   // a real date inside the summer runway so the plan resolves a phase
   w.eval(`Date.now=()=>new Date('2026-08-10T09:00:00Z').getTime();`);
   if(seedLocalStorage) for(const k in seedLocalStorage) w.localStorage.setItem(k,seedLocalStorage[k]);
-  const files=['data/bank.js','js/state.js','js/scheduler.js','js/plan.js','js/ui.js','js/views.js','js/drill.js','js/cards.js','js/app.js'];
+  const files=['data/bank.js','js/sync-config.js','js/state.js','js/scheduler.js','js/plan.js','js/ui.js','js/views.js','js/sync.js','js/drill.js','js/cards.js','js/app.js'];
   for(const f of files) w.eval(fs.readFileSync(path.join(ROOT,f),'utf8'));
   w.document.dispatchEvent(new w.Event('DOMContentLoaded'));
   return w;
@@ -133,6 +133,112 @@ console.log('\n— corrupt / hostile input —');
 is(boot({elixir_v1:'not json'}).Elixir.state.data.streak,0,'unparseable state falls back to defaults');
 is(boot({elixir_v1:'[1,2,3]'}).Elixir.state.data.streak,0,'array-shaped state rejected');
 is(boot({elixir_v1:'null'}).Elixir.state.data.streak,0,'null state rejected');
+
+
+/* --- sync: merge ---------------------------------------------------------
+   The rule under test is "a review is never silently lost". Every case below
+   is a situation that actually happens: studying on the phone on the bus, then
+   opening the laptop at a desk. */
+
+console.log('\n— sync: per-card merge —');
+const M = w.Elixir.sync._merge;
+const base = () => JSON.parse(JSON.stringify(w.Elixir.state.defaults()));
+
+function vault(sr, extra){ return Object.assign(base(), {sr:sr}, extra||{}); }
+
+{
+  const local  = vault({ q0001:{box:2,due:100,t:1000} });
+  const remote = vault({ q0002:{box:3,due:200,t:2000} });
+  const m = M(local, remote);
+  is(Object.keys(m.sr).sort(), ['q0001','q0002'], 'cards from both sides are kept');
+}
+{
+  const local  = vault({ q0001:{box:1,due:100,t:1000} });
+  const remote = vault({ q0001:{box:4,due:900,t:5000} });
+  is(M(local,remote).sr.q0001.box, 4, 'same card: the more recent review wins (remote)');
+}
+{
+  const local  = vault({ q0001:{box:5,due:900,t:9000} });
+  const remote = vault({ q0001:{box:1,due:100,t:1000} });
+  is(M(local,remote).sr.q0001.box, 5, 'same card: the more recent review wins (local)');
+}
+{
+  const local  = vault({ q0001:{box:1,due:100} });            // pre-sync entry
+  const remote = vault({ q0001:{box:3,due:300,t:5000} });
+  is(M(local,remote).sr.q0001.box, 3, 'a stamped review beats an unstamped one');
+}
+{
+  const local  = vault({ q0001:{box:4,due:400} });
+  const remote = vault({ q0001:{box:2,due:200} });
+  is(M(local,remote).sr.q0001.box, 4, 'both unstamped: the higher box wins');
+}
+{
+  // Same box means the same interval, so a later due date can only have come
+  // from a later review — that is the one to keep.
+  const local  = vault({ q0001:{box:3,due:400} });
+  const remote = vault({ q0001:{box:3,due:900} });
+  is(M(local,remote).sr.q0001.due, 900, 'equal boxes, unstamped: the later due date wins');
+}
+
+console.log('\n— sync: a real divergence —');
+{
+  // phone: 30 cards reviewed offline this morning, all freshly stamped
+  const phoneSr = {}; for (let i=1;i<=30;i++) phoneSr['q'+String(i).padStart(4,'0')]={box:2,due:500,t:9_000_000+i};
+  // laptop: an older snapshot of the same 30, plus 10 cards the phone never saw
+  const lapSr = {};   for (let i=1;i<=30;i++) lapSr['q'+String(i).padStart(4,'0')]={box:1,due:100,t:1_000_000+i};
+                      for (let i=31;i<=40;i++) lapSr['q'+String(i).padStart(4,'0')]={box:3,due:300,t:2_000_000+i};
+
+  const m = M(vault(phoneSr,{streak:12,answered:900,correct:700,xp:5000,lastStudy:'2026-08-10'}),
+              vault(lapSr,  {streak:9, answered:850,correct:690,xp:4800,lastStudy:'2026-08-08'}));
+
+  is(Object.keys(m.sr).length, 40, 'all 40 distinct cards survive the merge');
+  is(Object.keys(m.sr).filter(k=>m.sr[k].box===2).length, 30, "the phone's 30 fresh reviews all win");
+  is(m.sr.q0035.box, 3, 'cards only the laptop had are adopted, not dropped');
+  is(m.streak, 12, 'streak takes the longer of the two');
+  is(m.answered, 900, 'counters take the larger value');
+  is(m.lastStudy, '2026-08-10', 'lastStudy takes the later date');
+}
+
+console.log('\n— sync: counters and preferences —');
+{
+  const local  = vault({}, {byDom:{AN:{a:10,c:8}}, startDate:'2026-07-20', theme:'dark'});
+  const remote = vault({}, {byDom:{AN:{a:4,c:4},PH:{a:6,c:5}}, startDate:'2026-07-11', theme:'light'});
+  const m = M(local, remote);
+  is(m.byDom.AN, {a:10,c:8}, 'per-domain counts take the larger of each');
+  is(m.byDom.PH, {a:6,c:5},  'a domain only the other device has is adopted');
+  is(m.startDate, '2026-07-11', 'startDate takes the earlier date');
+  is(m.theme, 'dark', 'theme stays local — a dark laptop must not darken the phone');
+}
+
+console.log('\n— sync: hostile or empty server responses —');
+{
+  const local = vault({ q0001:{box:3,due:300,t:1} }, {streak:7});
+  is(M(local, null).sr,      local.sr,  'empty vault leaves local untouched');
+  is(M(local, undefined).sr, local.sr,  'missing response leaves local untouched');
+  is(M(local, [1,2,3]).sr,   local.sr,  'array response rejected');
+  is(M(local, "nope").sr,    local.sr,  'string response rejected');
+  is(M(local, vault({})).sr, local.sr,  'vault with no cards does not wipe local');
+  is(M(local, vault({})).streak, 7,     'and does not reset the streak');
+}
+
+console.log('\n— sync: pairing codes —');
+{
+  const S2 = w.Elixir.sync;
+  is(S2.normalizeKey('k7m2 9qx4-abcd efgh'), 'K7M29QX4ABCDEFGH', 'codes are case- and spacing-tolerant');
+  is(S2.normalizeKey('O0IL1o'), '001110', 'O folds to 0 and I/L fold to 1, in either case');
+  is(S2.formatKey('K7M29QX4ABCDEFGH'), 'K7M2-9QX4-ABCD-EFGH', 'display grouping');
+  is(S2.normalizeKey(S2.formatKey('K7M29QX4ABCDEFGH')), 'K7M29QX4ABCDEFGH', 'format then normalize round-trips');
+  is(S2.configured(), false, 'sync stays off while sync-config.js is blank');
+  is(S2.enabled(), false, 'and therefore never makes a request');
+}
+
+console.log('\n— sync: review stamps are written —');
+{
+  const w5 = boot();
+  const id = w5.Elixir.BANK[3].id;
+  w5.Elixir.scheduler.grade(id, 1);
+  is(typeof w5.Elixir.state.data.sr[id].t, 'number', 'grading records when the review happened');
+}
 
 console.log('\n'+pass+' passed, '+fail+' failed');
 process.exit(fail?1:0);

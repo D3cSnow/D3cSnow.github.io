@@ -161,11 +161,16 @@
     </div>
 
     <div>
+      <div class="block-h">Sync across devices</div>
+      <div id="sync-panel"></div>
+      <p class="sync-status" id="sync-status"></p>
+    </div>
+
+    <div>
       <div class="block-h">This device</div>
-      <p class="note">Progress lives in this browser only. Phone and laptop never sync on
-        their own — export a file from one and import it on the other. Worth doing weekly:
-        cleared site data or a new phone wipes the queue, and the queue is the only part
-        that cannot be rebuilt.</p>
+      <p class="note">Progress is stored in this browser. Export writes a file you can keep
+        or move by hand — worth doing occasionally even with sync on, since it is the only
+        copy that survives losing every device at once.</p>
       <div class="row" style="margin-top:22px">
         <button class="btn" type="button" id="export-btn">Export progress</button>
         <button class="btn" type="button" id="import-btn">Import progress</button>
@@ -182,11 +187,13 @@
 </div>
 
 <script src="./data/bank.js"></script>
+<script src="./js/sync-config.js"></script>
 <script src="./js/state.js"></script>
 <script src="./js/scheduler.js"></script>
 <script src="./js/plan.js"></script>
 <script src="./js/ui.js"></script>
 <script src="./js/views.js"></script>
+<script src="./js/sync.js"></script>
 <script src="./js/drill.js"></script>
 <script src="./js/cards.js"></script>
 <script src="./js/app.js"></script>
