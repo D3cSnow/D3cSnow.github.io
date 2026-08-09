@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="description" content="Elixir — 115-1 daily study system: spaced repetition, drills, roadmap.">
-<meta name="theme-color" content="#17191e">
+<meta name="theme-color" content="#0d0d0e">
+<meta name="robots" content="noindex, nofollow">
 <meta name="color-scheme" content="dark">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" href="./icon.svg" type="image/svg+xml">
@@ -16,11 +17,14 @@
 <title>Elixir · 115-1</title>
 <style>
 :root{
-  --bg:#17191e; --panel:#1d2027; --panel2:#1a1d23; --line:#2a2e37;
-  --ink:#e8eaed; --dim:#9aa1ac; --faint:#6c727c;
-  --acc:#7fb3a4; --acc2:#8fa0c9; --hot:#c07f79; --gold:#c2a86a; --good:#82b493;
-  --med:#7fb3a4; --ai:#8fa0c9;
-  --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;
+  /* Monochrome by default. Colour appears only where it means something:
+     green = you were right, red = you were wrong. Nothing else is tinted. */
+  --bg:#0d0d0e; --panel:#141416; --panel2:#111113; --line:#242428;
+  --ink:#ecebe7; --dim:#8e8c88; --faint:#5b5956;
+  --acc:#ecebe7; --acc2:#8e8c88; --hot:#b4685f; --gold:#c9a227; --good:#6ea77f;
+  --med:#8e8c88; --ai:#8e8c88;
+  --serif:"Iowan Old Style","Source Serif 4","Charter",Georgia,"Noto Serif TC",serif;
+  --mono:ui-monospace,"SF Mono","JetBrains Mono","Cascadia Mono",Menlo,Consolas,monospace;
   --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans TC",sans-serif;
 }
 *{box-sizing:border-box}
@@ -159,6 +163,99 @@ html{-webkit-text-size-adjust:100%}
 @media (display-mode:standalone){
   .wrap{padding-top:calc(18px + env(safe-area-inset-top))}
 }
+
+/* ================= sheet styling =================
+   Design rules being applied here, deliberately:
+   1. Colour = meaning only. Green/red appear on answer feedback; nothing else.
+   2. Hairlines instead of filled cards. Structure comes from rules, not boxes.
+   3. Near-square corners (3px). No shadows, no hover-lift, no motion for decoration.
+   4. Mono for structure and metadata; serif for the thing you actually read.
+   ================================================= */
+
+body{font-family:var(--mono);font-size:14px}
+
+/* --- panels become ruled sections, not floating cards --- */
+.panel{background:transparent;border:0;border-top:1px solid var(--line);
+       border-radius:0;padding:22px 0 26px;margin-bottom:0}
+.panel h2{font-size:13px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;
+          color:var(--ink);margin:0 0 12px}
+.panel h2 .tag{font-size:9.5px;letter-spacing:.12em;border:1px solid var(--line);
+          background:transparent!important;color:var(--faint)!important;
+          border-radius:2px;padding:2px 6px;text-transform:uppercase}
+
+/* --- header --- */
+.brand h1{font-size:15px;font-weight:600;letter-spacing:.16em;text-transform:uppercase}
+.brand .sub{font-size:11px;letter-spacing:.09em;color:var(--faint);margin-top:6px}
+header{border-bottom:1px solid var(--line);align-items:flex-start}
+.count{border:0;border-left:1px solid var(--line);border-radius:0;
+       padding:2px 0 2px 12px;text-align:left;min-width:64px}
+.count .n{font-size:19px;font-variant-numeric:tabular-nums}
+.count .l{font-size:9px;letter-spacing:.1em;color:var(--faint)}
+
+/* --- nav: a ruled tab strip, not pills --- */
+nav{border-bottom:1px solid var(--line);gap:0;margin-bottom:0}
+nav button{border:0;border-bottom:1px solid transparent;border-radius:0;
+       padding:11px 15px;font-family:var(--mono);font-size:11.5px;
+       letter-spacing:.11em;text-transform:uppercase;color:var(--faint);margin-bottom:-1px}
+nav button:hover{color:var(--dim);background:transparent}
+nav button.on{background:transparent;border-color:var(--ink);color:var(--ink)}
+
+/* --- the question itself: serif, because this is the part you read --- */
+.q-card{background:transparent;border:0;border-left:1px solid var(--line);
+        border-radius:0;padding:2px 0 2px 18px}
+.q-text{font-family:var(--serif);font-size:18px;line-height:1.5;font-weight:400;
+        letter-spacing:.005em}
+.q-meta{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.q-domain{border:1px solid var(--line);border-radius:2px;background:transparent!important;
+        color:var(--faint)!important}
+
+/* --- options: rows, not buttons --- */
+.opt{background:transparent;border:0;border-bottom:1px solid var(--line);
+     border-radius:0;padding:13px 4px;margin:0;font-family:var(--mono);font-size:13.5px;
+     transition:background .1s}
+.opt:hover{border-color:var(--line);background:#17171a}
+.opt .ltr{color:var(--faint)}
+.opt.correct{background:rgba(110,167,127,.10);border-color:var(--good);color:var(--ink)}
+.opt.wrong{background:rgba(180,104,95,.10);border-color:var(--hot);color:var(--ink)}
+.opt.correct .ltr{color:var(--good)} .opt.wrong .ltr{color:var(--hot)}
+
+.exp{background:transparent;border-left:1px solid var(--line);border-radius:0;
+     padding:0 0 0 16px;margin-top:16px;font-family:var(--serif);font-size:15px;
+     line-height:1.62;color:var(--dim)}
+.exp b{color:var(--ink);font-weight:600}
+
+.reveal{border:1px dashed var(--line);border-radius:3px;font-family:var(--mono);
+     font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.reveal:hover{border-color:var(--dim);color:var(--dim)}
+
+/* --- buttons: hairline, square, no fill --- */
+.btn{border-radius:3px;font-family:var(--mono);font-size:11.5px;letter-spacing:.09em;
+     text-transform:uppercase}
+.chip{border-radius:3px;font-family:var(--mono);font-size:11px;letter-spacing:.08em;
+     text-transform:uppercase}
+.chip.on,.chip.ai.on{border-color:var(--ink);color:var(--ink)}
+.grade-row button{border-radius:3px;font-family:var(--mono);font-size:11px;
+     letter-spacing:.09em;text-transform:uppercase;font-weight:500}
+select,input[type=number]{border-radius:3px;background:transparent}
+label.f{font-size:9.5px;letter-spacing:.13em;color:var(--faint)}
+
+/* --- stats: figures on rules --- */
+.stat{background:transparent;border:0;border-top:1px solid var(--line);
+      border-radius:0;padding:13px 0 4px}
+.stat .v{font-size:26px;font-weight:400;font-variant-numeric:tabular-nums}
+.stat .k{font-size:9.5px;letter-spacing:.12em;color:var(--faint)}
+.progress-bar{height:2px;border:0;border-radius:0;background:var(--line)}
+.progress-bar > i{background:var(--ink);border-radius:0}
+
+/* --- roadmap: an index, with square ticks --- */
+.rm-phase::before{border-radius:0;width:5px;height:5px;left:-3px;background:var(--dim)}
+.rm-phase .when{color:var(--faint);letter-spacing:.08em}
+.rm-phase h3{font-size:12.5px;letter-spacing:.1em;text-transform:uppercase}
+
+.block .t{letter-spacing:.05em}
+.foot{color:var(--faint);letter-spacing:.05em;border-top:1px solid var(--line);
+      padding-top:18px;text-align:left}
+.kbd{border-radius:2px}
 </style>
 </head>
 <body>

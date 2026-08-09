@@ -1,6 +1,6 @@
 /* Elixir service worker — network-first, cache fallback.
    Bump CACHE when you change the app so old files get evicted. */
-const CACHE = "elixir-v1";
+const CACHE = "elixir-v2";
 const ASSETS = ["./","./index.html","./manifest.webmanifest",
                 "./icon.svg","./icon-180.png","./icon-192.png","./icon-512.png"];
 
