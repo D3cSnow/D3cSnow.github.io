@@ -36,15 +36,46 @@ D3cSnow.github.io/          →  https://d3csnow.github.io/
 
 ## 部署（第一次）
 
-在 `D3cSnow.github.io` 資料夾開 PowerShell：
+> ⚠️ **先清 4 個殘留的 lock 檔。**
+> 這個 repo 的 `git init` 與第一次 commit 已經幫你做好了（commit `Site + Elixir web app`，檔案都已加入版控），
+> 但當時的執行環境沒有刪檔權限，留下了 4 個 `.lock` 檔會擋住後續操作。**在 Windows 上刪掉就沒事了。**
+
+在 `D3cSnow.github.io` 資料夾開 PowerShell（按住 Shift 右鍵 →「在此處開啟 PowerShell 視窗」）：
 
 ```powershell
 cd C:\Users\User\Desktop\D3cSnow.github.io
 
-# 只有第一次需要設定身分
+# ① 清掉殘留的 lock 檔
+Remove-Item .git\HEAD.lock, .git\index.lock, .git\objects\maintenance.lock, .git\refs\heads\master.lock -Force -ErrorAction SilentlyContinue
+
+# ② 確認狀態正常（應該顯示 nothing to commit, working tree clean）
+git status
+
+# ③ 設定身分（只有第一次需要）
 git config --global user.name  "D3cSnow"
 git config --global user.email "brianbrian1018@gmail.com"
 
+# ④ 分支改名並推送
+git branch -M main
+git push -u origin main
+```
+
+remote 已經設好指向 `https://github.com/D3cSnow/D3cSnow.github.io.git`，不用再 `git remote add`。
+
+### 如果哪一步出錯
+
+| 訊息 | 處理 |
+|---|---|
+| `remote origin already exists` | 正常，remote 已設好，跳過該步 |
+| 遠端已有 commit（建 repo 時勾了 README / LICENSE） | `git pull --rebase origin main` 之後再 `git push` |
+| `git status` 顯示一堆奇怪的東西 | 見下方「完全重來」 |
+| 推送時要求登入 | 用 GitHub 帳號登入；若要求密碼，那需要 **Personal Access Token**（Settings → Developer settings → Tokens），不是 GitHub 密碼 |
+
+**完全重來**（最保險，也順便自己練一次完整流程）：
+在檔案總管刪掉 `D3cSnow.github.io\.git` 這個隱藏資料夾（檢視 → 勾「隱藏的項目」），然後：
+
+```powershell
+cd C:\Users\User\Desktop\D3cSnow.github.io
 git init
 git add .
 git commit -m "Site + Elixir web app"
@@ -52,12 +83,6 @@ git branch -M main
 git remote add origin https://github.com/D3cSnow/D3cSnow.github.io.git
 git push -u origin main
 ```
-
-> 如果 remote 已經存在（跳出 `remote origin already exists`），改用：
-> `git remote set-url origin https://github.com/D3cSnow/D3cSnow.github.io.git`
->
-> 如果遠端已經有 commit（例如 GitHub 建 repo 時勾了 README），先：
-> `git pull --rebase origin main` 再 push。
 
 推上去之後到 GitHub：**Settings → Pages**，確認 Source 是 `Deploy from a branch`、branch `main` / `(root)`。
 User site 通常會自動啟用。等 1–2 分鐘。
