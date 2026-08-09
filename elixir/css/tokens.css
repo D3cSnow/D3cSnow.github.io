@@ -1,0 +1,130 @@
+/* Elixir — design tokens.
+   ---------------------------------------------------------------------------
+   Direction: "Quiet". Soft paper, serif reading text, low contrast, hairline
+   rules instead of filled cards. Built to be sat in for five hours a day.
+
+   Two rules hold the whole system together:
+
+   1. Colour always means something. Paper and ink are the entire palette;
+      green and red appear only to say "you were right" or "you were wrong".
+      Nothing is tinted for decoration.
+   2. Prose is soft, data is sharp. Questions and roadmap text are serif and
+      low-contrast so they are easy to sit with. Every number is mono, tabular
+      and a step darker, so the Progress tab still reads as instrumentation.
+
+   No webfonts anywhere. System stacks only — the app must paint instantly and
+   look identical with the network switched off.
+   --------------------------------------------------------------------------- */
+
+:root {
+  color-scheme: light dark;
+
+  /* type ------------------------------------------------------------------ */
+  --serif: ui-serif, Georgia, "Iowan Old Style", "Times New Roman",
+           "Noto Serif TC", "Songti TC", serif;
+  --sans:  ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+           "Helvetica Neue", "Noto Sans TC", "PingFang TC", sans-serif;
+  --mono:  ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Mono", Menlo,
+           Consolas, monospace;
+
+  --size-prose:   17px;   /* questions, roadmap, explanations */
+  --size-ui:      14px;   /* buttons, labels, chrome          */
+  --size-meta:    12px;   /* domain tags, counters, captions  */
+  --size-display: 26px;   /* the big numbers                  */
+
+  --lh-prose: 1.62;
+  --lh-ui:    1.5;
+
+  /* space ----------------------------------------------------------------- */
+  --s1: 4px;   --s2: 8px;   --s3: 12px;  --s4: 16px;
+  --s5: 22px;  --s6: 30px;  --s7: 44px;  --s8: 64px;
+
+  --radius:    3px;   /* near-square; this is paper, not plastic */
+  --measure:   34em; /* reading width for prose                 */
+  --page:      760px;
+
+  --dur: 120ms;
+  --ease: cubic-bezier(.2, 0, .2, 1);
+}
+
+/* light — the default -------------------------------------------------------
+   Paper is warm and slightly off-white. Ink never reaches black; #2E2A24 at
+   17px serif is the comfort sweet spot for long sessions. */
+:root,
+:root[data-theme="light"] {
+  --paper:      #FAF9F5;   /* page                                  */
+  --paper-2:    #FFFDF9;   /* raised: question card, active option  */
+  --paper-3:    #F2F0E8;   /* recessed: selected chip, progress bed */
+
+  --ink:        #2E2A24;   /* prose                                 */
+  --ink-2:      #6B6459;   /* supporting text                       */
+  --ink-3:      #8A8175;   /* captions, placeholders                */
+  --ink-data:   #1F1C17;   /* numbers — one step darker than prose  */
+
+  --rule:       #E7E3D9;   /* default hairline                      */
+  --rule-2:     #D6D0C2;   /* emphasised hairline, focused control  */
+
+  --right:      #3F6B4F;   /* correct                               */
+  --right-bg:   #EDF2ED;
+  --wrong:      #A04B3C;   /* incorrect                             */
+  --wrong-bg:   #F7EDEA;
+
+  --focus:      #6B6459;
+}
+
+/* dark — for the late sessions ----------------------------------------------
+   A warm dark, not a black one: same paper feeling after sundown. Contrast is
+   deliberately held below pure white, which glares at 1am. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --paper:      #171614;
+  --paper-2:    #1E1D1A;
+  --paper-3:    #232220;
+
+  --ink:        #E4E0D6;
+  --ink-2:      #A29B8D;
+  --ink-3:      #7D766A;
+  --ink-data:   #F2EFE7;
+
+  --rule:       #2C2A26;
+  --rule-2:     #3D3A34;
+
+  --right:      #7FA98A;
+  --right-bg:   #1C221D;
+  --wrong:      #C4796A;
+  --wrong-bg:   #241B19;
+
+  --focus:      #A29B8D;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --paper:    #171614;
+    --paper-2:  #1E1D1A;
+    --paper-3:  #232220;
+
+    --ink:      #E4E0D6;
+    --ink-2:    #A29B8D;
+    --ink-3:    #7D766A;
+    --ink-data: #F2EFE7;
+
+    --rule:     #2C2A26;
+    --rule-2:   #3D3A34;
+
+    --right:    #7FA98A;
+    --right-bg: #1C221D;
+    --wrong:    #C4796A;
+    --wrong-bg: #241B19;
+
+    --focus:    #A29B8D;
+  }
+}
+
+/* Respect the system setting for motion. Nothing in Elixir animates for
+   decoration, but transitions still get switched off here. */
+@media (prefers-reduced-motion: reduce) {
+  :root { --dur: 0ms; }
+}

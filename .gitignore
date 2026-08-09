@@ -1,0 +1,8 @@
+# The site itself has no dependencies. These only appear if you install jsdom
+# to run elixir/test/app.test.js.
+node_modules/
+package.json
+package-lock.json
+
+.DS_Store
+Thumbs.db

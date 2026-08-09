@@ -5,68 +5,85 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>D3cSnow</title>
 <meta name="robots" content="noindex, nofollow">
-<meta name="theme-color" content="#0d0d0e">
-<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#FAF9F5">
+<meta name="color-scheme" content="light dark">
 <link rel="icon" href="./elixir/icon.svg" type="image/svg+xml">
 <style>
+/* Deliberately self-contained: one small page, no shared stylesheet to keep in
+   sync. The token values match elixir/css/tokens.css. */
 :root{
-  --bg:#0d0d0e; --line:#242428; --line2:#17171a;
-  --ink:#ecebe7; --dim:#8e8c88; --faint:#5b5956;
-  --mono:ui-monospace,"SF Mono","JetBrains Mono","Cascadia Mono",Menlo,Consolas,monospace;
+  --paper:#FAF9F5; --paper-2:#FFFDF9;
+  --ink:#2E2A24; --ink-2:#6B6459; --ink-3:#8A8175;
+  --rule:#E7E3D9; --rule-2:#D6D0C2;
+  --serif:ui-serif,Georgia,"Iowan Old Style","Times New Roman","Noto Serif TC",serif;
+  --sans:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans TC",sans-serif;
+  --mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --paper:#171614; --paper-2:#1E1D1A;
+    --ink:#E4E0D6; --ink-2:#A29B8D; --ink-3:#7D766A;
+    --rule:#2C2A26; --rule-2:#3D3A34;
+  }
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{-webkit-text-size-adjust:100%}
-html,body{margin:0;background:var(--bg);color:var(--ink);
-  font-family:var(--mono);font-size:14px;line-height:1.65;
-  -webkit-font-smoothing:antialiased}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--serif);font-size:17px;line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+.sheet{max-width:600px;margin:0 auto;padding:14vh 24px calc(72px + env(safe-area-inset-bottom))}
 
-.sheet{max-width:560px;margin:0 auto;
-  padding:14vh 24px calc(80px + env(safe-area-inset-bottom))}
+h1{font-family:var(--serif);font-size:25px;font-weight:400;letter-spacing:.015em;margin:0}
+.sub{font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:var(--ink-3);margin-top:4px}
 
-.mark{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink)}
-.rule{height:1px;background:var(--line);margin:14px 0 0}
+.index{margin:44px 0 0}
+.entry{
+  display:grid;grid-template-columns:2.4em 1fr;gap:0 16px;align-items:baseline;
+  text-decoration:none;color:inherit;
+  padding:22px 4px;border-top:1px solid var(--rule);
+  transition:background 120ms cubic-bezier(.2,0,.2,1);
+}
+.entry:last-of-type{border-bottom:1px solid var(--rule)}
+.entry:hover{background:var(--paper-2)}
+.entry .no{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:12px;color:var(--ink-3)}
+.entry .ttl{font-size:19px}
+.entry .dsc{grid-column:2;font-size:15px;color:var(--ink-2);margin-top:4px;max-width:34em}
 
-.idx{margin:44px 0 0;border-top:1px solid var(--line)}
-.idx a{display:grid;grid-template-columns:2.6em 1fr auto;align-items:baseline;
-  gap:0 14px;padding:15px 2px;border-bottom:1px solid var(--line);
-  text-decoration:none;color:var(--ink)}
-.idx a:hover{background:var(--line2)}
-.idx .n{color:var(--faint);font-size:12px;font-variant-numeric:tabular-nums}
-.idx .t{font-size:15px;letter-spacing:.01em}
-.idx .d{grid-column:2;font-size:12.5px;color:var(--dim);margin-top:3px;line-height:1.55}
-.idx .s{color:var(--faint);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
-  align-self:center}
-.idx a:hover .s{color:var(--dim)}
+.note{
+  margin:40px 0 0;padding-top:18px;border-top:1px solid var(--rule);
+  font-family:var(--sans);font-size:13px;line-height:1.75;color:var(--ink-3);max-width:34em;
+}
+.note em{font-style:normal;color:var(--ink-2)}
 
-.note{margin:40px 0 0;padding-top:18px;border-top:1px solid var(--line);
-  color:var(--faint);font-size:12px;line-height:1.8}
-.note em{color:var(--dim);font-style:normal}
-
-@media (max-width:480px){
-  .sheet{padding:9vh 18px calc(60px + env(safe-area-inset-bottom))}
-  .idx a{grid-template-columns:2.2em 1fr;gap:0 10px;padding:14px 2px}
-  .idx .s{display:none}
+@media (max-width:520px){
+  .sheet{padding:9vh 20px calc(56px + env(safe-area-inset-bottom))}
+  .index{margin-top:32px}
+  .entry{grid-template-columns:2em 1fr;gap:0 12px;padding:18px 2px}
 }
 </style>
 </head>
 <body>
 <div class="sheet">
 
-  <div class="mark">D3cSnow</div>
-  <div class="rule"></div>
+  <h1>D3cSnow</h1>
+  <div class="sub">index</div>
 
-  <nav class="idx">
-    <a href="./elixir/">
-      <span class="n">01</span>
-      <span class="t">Elixir</span>
-      <span class="s">open</span>
-      <span class="d">Spaced-repetition study system. Daily drills, Leitner queue, term roadmap.</span>
+  <nav class="index">
+    <a class="entry" href="./elixir/">
+      <span class="no">01</span>
+      <span class="ttl">Elixir</span>
+      <span class="dsc">A spaced-repetition study system — daily drills, a Leitner queue,
+        and the term roadmap. Works offline.</span>
     </a>
   </nav>
 
   <p class="note">
-    Elixir stores everything in <em>this browser, on this device</em>. Nothing is uploaded.<br>
-    Moving devices: <em>Export</em> a JSON from the Progress tab, then <em>Import</em> it on the new one.
+    Elixir keeps everything in <em>this browser, on this device</em>. Nothing is uploaded
+    and there is no backend.<br>
+    Moving between devices: <em>export</em> a file from the Progress tab, then
+    <em>import</em> it on the other one.
   </p>
 
 </div>

@@ -4,11 +4,26 @@
   "description": "Daily study system: spaced repetition, drills, roadmap.",
   "start_url": "./index.html",
   "scope": "./",
+  "id": "/elixir/",
   "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#0d0d0e",
-  "theme_color": "#0d0d0e",
+  "orientation": "any",
+  "background_color": "#FAF9F5",
+  "theme_color": "#FAF9F5",
   "lang": "en",
+  "dir": "ltr",
+  "categories": ["education", "productivity"],
+  "shortcuts": [
+    {
+      "name": "Study due cards",
+      "short_name": "Due cards",
+      "url": "./index.html#cards"
+    },
+    {
+      "name": "Start a drill",
+      "short_name": "Drill",
+      "url": "./index.html#drill"
+    }
+  ],
   "icons": [
     {
       "src": "./icon-192.png",
